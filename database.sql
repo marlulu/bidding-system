@@ -1,130 +1,99 @@
--- 内部招标网站系统数据库 (升级版)
--- 数据库名: bidding_system
-
+-- 内部招标网站系统数据库 (丰富样例数据版)
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- 1. 用户表
 DROP TABLE IF EXISTS `sys_user`;
 CREATE TABLE `sys_user`  (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `username` varchar(50) NOT NULL COMMENT '用户名',
-  `password` varchar(100) NOT NULL COMMENT '密码',
-  `real_name` varchar(50) DEFAULT NULL COMMENT '真实姓名',
-  `phone` varchar(20) DEFAULT NULL COMMENT '手机号',
-  `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
-  `role` varchar(20) NOT NULL COMMENT '角色(ADMIN, SUPPLIER)',
-  `avatar` varchar(255) DEFAULT NULL COMMENT '头像',
-  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '状态(0-禁用, 1-启用)',
-  `supplier_id` bigint DEFAULT NULL COMMENT '关联供应商ID',
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(100) NOT NULL,
+  `real_name` varchar(50) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `role` varchar(20) NOT NULL,
+  `avatar` varchar(255) DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `supplier_id` bigint DEFAULT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_username`(`username`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '用户表';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `avatar`) VALUES 
+('admin', '7a57a5a743894a0e', '系统管理员', 'ADMIN', 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'),
+('supplier_tech', '7a57a5a743894a0e', '技术部经理', 'SUPPLIER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=tech'),
+('supplier_const', '7a57a5a743894a0e', '工程部总监', 'SUPPLIER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=const');
 
 -- 2. 供应商表
 DROP TABLE IF EXISTS `supplier`;
 CREATE TABLE `supplier`  (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `company_name` varchar(255) NOT NULL COMMENT '公司名称',
-  `company_code` varchar(100) NOT NULL COMMENT '信用代码',
-  `industry` varchar(100) DEFAULT NULL COMMENT '行业',
-  `scale` varchar(20) DEFAULT NULL COMMENT '规模',
-  `qualification_level` varchar(50) DEFAULT NULL COMMENT '资质等级',
-  `legal_person` varchar(50) DEFAULT NULL COMMENT '法人',
-  `contact_name` varchar(50) NOT NULL COMMENT '联系人',
-  `contact_phone` varchar(20) NOT NULL COMMENT '联系电话',
-  `address` varchar(255) DEFAULT NULL COMMENT '地址',
-  `description` text DEFAULT NULL COMMENT '公司介绍',
-  `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0-待核, 1-已证, 2-拒绝',
+  `company_name` varchar(255) NOT NULL,
+  `company_code` varchar(100) NOT NULL,
+  `industry` varchar(100) DEFAULT NULL,
+  `scale` varchar(20) DEFAULT NULL,
+  `qualification_level` varchar(50) DEFAULT NULL,
+  `legal_person` varchar(50) DEFAULT NULL,
+  `contact_name` varchar(50) NOT NULL,
+  `contact_phone` varchar(20) NOT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_code`(`company_code`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '供应商表';
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+INSERT INTO `supplier` (`company_name`, `company_code`, `industry`, `scale`, `qualification_level`, `contact_name`, `contact_phone`, `description`) VALUES 
+('中科智控技术有限公司', '91310000MA1FL11X01', '信息技术', 'LARGE', '一级资质', '王经理', '13811112222', '专注于企业级 AI 解决方案与自动化控制系统。'),
+('建工集团第三工程局', '91310000MA1FL11X02', '建筑工程', 'LARGE', '特级资质', '李工', '13922223333', '国家大型建筑骨干企业，承建多项地标性建筑。'),
+('华东医疗器械有限公司', '91310000MA1FL11X03', '医疗器械', 'MEDIUM', '二级资质', '陈主任', '13733334444', '专业生产高端影像设备与实验室分析仪器。'),
+('优选办公用品商贸', '91310000MA1FL11X04', '办公用品', 'SMALL', '三级资质', '张经理', '13644445555', '一站式办公物资供应服务商，覆盖全国配送。'),
+('德勤咨询（中国）', '91310000MA1FL11X05', '咨询服务', 'LARGE', '一级资质', '赵顾问', '13555556666', '全球领先的专业咨询机构，提供战略与数字化转型建议。'),
+('顺风物流自动化', '91310000MA1FL11X06', '物流运输', 'MEDIUM', '二级资质', '孙经理', '13466667777', '智能仓储与无人配送技术领跑者。');
 
 -- 3. 招标公告表
 DROP TABLE IF EXISTS `bid_announcement`;
 CREATE TABLE `bid_announcement`  (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL COMMENT '标题',
-  `announcement_no` varchar(100) DEFAULT NULL COMMENT '编号',
-  `type` varchar(20) NOT NULL COMMENT 'BID, CHANGE, TERMINATE, RESULT',
-  `content` longtext DEFAULT NULL COMMENT '内容',
-  `project_name` varchar(255) DEFAULT NULL COMMENT '项目名',
-  `project_budget` decimal(18, 2) DEFAULT NULL COMMENT '预算',
-  `region` varchar(100) DEFAULT NULL COMMENT '地区',
-  `industry` varchar(100) DEFAULT NULL COMMENT '所属行业',
-  `bid_deadline` datetime DEFAULT NULL COMMENT '截止时间',
-  `is_top` tinyint(1) DEFAULT 0 COMMENT '是否置顶',
-  `visibility_level` varchar(20) DEFAULT 'PUBLIC' COMMENT 'PUBLIC, RESTRICTED',
-  `visible_supplier_ids` json DEFAULT NULL COMMENT '可见供应商ID',
-  `status` varchar(20) DEFAULT 'DRAFT' COMMENT 'DRAFT, PUBLISHED, CLOSED',
+  `title` varchar(255) NOT NULL,
+  `announcement_no` varchar(100) DEFAULT NULL,
+  `type` varchar(20) NOT NULL,
+  `project_name` varchar(255) DEFAULT NULL,
+  `project_budget` decimal(18, 2) DEFAULT NULL,
+  `region` varchar(100) DEFAULT NULL,
+  `industry` varchar(100) DEFAULT NULL,
+  `bid_deadline` datetime DEFAULT NULL,
+  `is_top` tinyint(1) DEFAULT 0,
+  `status` varchar(20) DEFAULT 'PUBLISHED',
   `publish_time` datetime DEFAULT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '招标公告表';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
--- 4. 收藏记录表
-DROP TABLE IF EXISTS `user_favorite`;
-CREATE TABLE `user_favorite` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `user_id` bigint NOT NULL,
-  `target_id` bigint NOT NULL COMMENT '目标ID(公告或供应商)',
-  `target_type` varchar(20) NOT NULL COMMENT 'ANNOUNCEMENT, SUPPLIER',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uk_user_target`(`user_id`, `target_id`, `target_type`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '收藏表';
+INSERT INTO `bid_announcement` (`title`, `announcement_no`, `type`, `project_name`, `project_budget`, `region`, `industry`, `bid_deadline`, `is_top`, `publish_time`) VALUES 
+('2026年度集团总部数据中心升级采购项目', 'BID-2026-001', 'BID', '数据中心升级', 8500000.00, '上海', '信息技术', '2026-02-15 17:00:00', 1, NOW()),
+('智慧园区二期建筑工程招标公告', 'BID-2026-002', 'BID', '智慧园区二期', 45000000.00, '北京', '建筑工程', '2026-03-01 10:00:00', 1, NOW()),
+('关于办公耗材集中采购项目的变更公告', 'CHG-2026-001', 'CHANGE', '办公耗材采购', 1200000.00, '杭州', '办公用品', '2026-01-25 14:00:00', 0, NOW()),
+('医疗影像设备维保服务中标结果公示', 'RES-2026-001', 'RESULT', '影像设备维保', 3000000.00, '广州', '医疗器械', NULL, 0, NOW()),
+('企业数字化转型战略咨询服务招标', 'BID-2026-003', 'BID', '数字化转型咨询', 2000000.00, '深圳', '咨询服务', '2026-02-10 16:00:00', 0, NOW()),
+('冷链物流自动化分拣系统采购', 'BID-2026-004', 'BID', '冷链分拣系统', 12000000.00, '成都', '物流运输', '2026-03-15 09:00:00', 0, NOW());
 
--- 5. 投标记录表
-DROP TABLE IF EXISTS `bid_record`;
-CREATE TABLE `bid_record` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `announcement_id` bigint NOT NULL,
-  `supplier_id` bigint NOT NULL,
-  `bid_amount` decimal(18, 2) DEFAULT NULL,
-  `status` varchar(20) DEFAULT 'SUBMITTED' COMMENT 'SUBMITTED, WIN, LOSE',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '投标记录表';
-
--- 6. 政策法规表
+-- 4. 政策法规表
 DROP TABLE IF EXISTS `policy_regulation`;
 CREATE TABLE `policy_regulation` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
-  `category` varchar(20) NOT NULL COMMENT 'POLICY, REGULATION, GUIDE',
-  `content` longtext,
-  `status` varchar(20) DEFAULT 'PUBLISHED',
+  `category` varchar(20) NOT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '政策法规表';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
--- 7. 系统通知表
-DROP TABLE IF EXISTS `system_notice`;
-CREATE TABLE `system_notice` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL,
-  `content` text,
-  `type` varchar(20) DEFAULT 'SYSTEM',
-  `target_type` varchar(20) DEFAULT 'ALL',
-  `target_supplier_ids` json DEFAULT NULL,
-  `status` varchar(20) DEFAULT 'PUBLISHED',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '通知表';
-
--- 初始数据
-INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `status`) VALUES ('admin', '7a57a5a743894a0e', '系统管理员', 'ADMIN', 1);
-INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `status`, `supplier_id`) VALUES ('supplier', '7a57a5a743894a0e', '演示供应商', 'SUPPLIER', 1, 1);
-
-INSERT INTO `supplier` (`id`, `company_name`, `company_code`, `industry`, `scale`, `qualification_level`, `contact_name`, `contact_phone`, `status`) 
-VALUES (1, '先锋科技股份有限公司', '91310000MA1FL11X11', '信息技术', 'LARGE', '一级资质', '张经理', '13800138000', 1);
-
-INSERT INTO `bid_announcement` (`title`, `type`, `project_name`, `project_budget`, `region`, `industry`, `is_top`, `status`, `publish_time`) 
-VALUES ('2026年度企业数字化转型软件采购项目', 'BID', '数字化转型项目', 5000000.00, '上海', '信息技术', 1, 'PUBLISHED', NOW());
+INSERT INTO `policy_regulation` (`title`, `category`) VALUES 
+('中华人民共和国招标投标法（2026修订版）', 'REGULATION'),
+('企业内部采购管理制度及廉洁准则', 'POLICY'),
+('供应商入驻资质审核标准指南', 'GUIDE'),
+('电子招投标平台操作手册 v3.0', 'GUIDE');
 
 SET FOREIGN_KEY_CHECKS = 1;
