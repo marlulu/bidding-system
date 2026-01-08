@@ -36,18 +36,19 @@ public class WebConfig implements WebMvcConfigurer {
                     }
                 }
                 
-                // 检查是否是公开接口
-                String path = request.getRequestURI();
-                if (path.equals("/api/announcements") || path.equals("/api/suppliers") || path.equals("/api/policies")) {
-                    return true;
-                }
-                
+                // 默认拦截所有未匹配 excludePathPatterns 的请求
                 response.setStatus(401);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"code\":401,\"message\":\"未授权，请先登录\"}");
                 return false;
             }
         }).addPathPatterns("/api/**")
-          .excludePathPatterns("/api/auth/login", "/api/auth/register");
+          .excludePathPatterns(
+              "/api/auth/login", 
+              "/api/auth/register",
+              "/api/announcements",  // 招标列表
+              "/api/suppliers",      // 供应商列表
+              "/api/policies"        // 政策列表
+          );
     }
 }

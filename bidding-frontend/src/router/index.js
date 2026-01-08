@@ -89,23 +89,32 @@ router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} - 内部招标采购门户`
   }
 
+  // 1. 如果是登录页
   if (to.path === '/login') {
     if (token) {
       next('/')
     } else {
       next()
     }
+    return
+  }
+
+  // 2. 检查路由元信息中的 requiresAuth
+  // 显式判断 false，确保首页和列表页绝对放行
+  if (to.meta.requiresAuth === false) {
+    next()
+    return
+  }
+
+  // 3. 如果需要登录但没有 token
+  if (to.meta.requiresAuth && !token) {
+    next({
+      path: '/login',
+      query: { redirect: to.fullPath }
+    })
   } else {
-    // 检查是否需要登录
-    if (to.meta.requiresAuth && !token) {
-      // 如果需要登录但没有 token，跳转到登录页，并记录来源页面
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath }
-      })
-    } else {
-      next()
-    }
+    // 4. 其他情况（如未定义 meta 或已登录）
+    next()
   }
 })
 
