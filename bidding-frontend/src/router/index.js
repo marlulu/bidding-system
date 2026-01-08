@@ -113,6 +113,18 @@ const routes = [
         name: 'UserList',
         component: () => import('@/views/user/List.vue'),
         meta: { title: '用户管理', requireAdmin: true }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/user/Profile.vue'),
+        meta: { title: '个人中心' }
+      },
+      {
+        path: 'favorites',
+        name: 'Favorites',
+        component: () => import('@/views/user/Profile.vue'),
+        meta: { title: '我的收藏' }
       }
     ]
   }
@@ -123,10 +135,8 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
   const token = getToken()
-  
   if (to.path === '/login') {
     if (token) {
       next('/')
@@ -134,7 +144,7 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if (!token) {
+    if (!token && to.path !== '/dashboard' && to.path !== '/announcements' && !to.path.startsWith('/announcements/detail')) {
       next('/login')
     } else {
       next()

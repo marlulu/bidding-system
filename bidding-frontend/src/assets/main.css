@@ -1,0 +1,61 @@
+:root {
+  --primary-color: #003366;
+  --secondary-color: #006633;
+  --accent-color: #FF6600;
+  --info-color: #0099FF;
+  --bg-color: #F5F5F5;
+  --text-color: #333333;
+  --border-color: #E4E7ED;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.el-button--primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.el-button--success {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+}
+
+.el-button--warning {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+.el-menu--horizontal {
+  border-bottom: none !important;
+}
+
+.el-menu--horizontal .el-menu-item.is-active {
+  border-bottom: 2px solid var(--accent-color) !important;
+  color: var(--accent-color) !important;
+}
+
+.card-item {
+  transition: all 0.3s;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.card-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  border-left: 5px solid var(--primary-color);
+  padding-left: 15px;
+}

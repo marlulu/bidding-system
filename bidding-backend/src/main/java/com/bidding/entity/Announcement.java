@@ -10,40 +10,26 @@ import java.time.LocalDateTime;
 public class Announcement {
     @TableId(type = IdType.AUTO)
     private Long id;
-    
     private String title;
-    
     private String announcementNo;
-    
     private String type;
-    
     private String content;
-    
     private String projectName;
-    
     private BigDecimal projectBudget;
-    
+    private String region;
+    private String industry;
     private LocalDateTime bidDeadline;
-    
+    private Integer isTop;
     private String contactPerson;
-    
     private String contactPhone;
-    
     private String attachmentFiles;
-    
     private String visibilityLevel;
-    
     private String visibleSupplierIds;
-    
     private String status;
-    
     private Long publisherId;
-    
     private LocalDateTime publishTime;
-    
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
-    
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }
