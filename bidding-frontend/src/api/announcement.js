@@ -1,10 +1,28 @@
 import request from '@/utils/request'
 
+// 模拟数据用于预览展示
+const mockAnnouncements = [
+  { id: 1, title: '2026年度集团总部数据中心升级采购项目', announcementNo: 'BID-2026-001', type: 'BID', projectName: '数据中心升级', projectBudget: 8500000, region: '上海', industry: '信息技术', bidDeadline: '2026-02-15 17:00:00', isTop: 1, status: 'PUBLISHED', publishTime: '2026-01-08' },
+  { id: 2, title: '智慧园区二期建筑工程招标公告', announcementNo: 'BID-2026-002', type: 'BID', projectName: '智慧园区二期', projectBudget: 45000000, region: '北京', industry: '建筑工程', bidDeadline: '2026-03-01 10:00:00', isTop: 1, status: 'PUBLISHED', publishTime: '2026-01-07' },
+  { id: 3, title: '关于办公耗材集中采购项目的变更公告', announcementNo: 'CHG-2026-001', type: 'CHANGE', projectName: '办公耗材采购', projectBudget: 1200000, region: '杭州', industry: '办公用品', bidDeadline: '2026-01-25 14:00:00', isTop: 0, status: 'PUBLISHED', publishTime: '2026-01-06' },
+  { id: 4, title: '医疗影像设备维保服务中标结果公示', announcementNo: 'RES-2026-001', type: 'RESULT', projectName: '影像设备维保', projectBudget: 3000000, region: '广州', industry: '医疗器械', bidDeadline: null, isTop: 0, status: 'PUBLISHED', publishTime: '2026-01-05' },
+  { id: 5, title: '企业数字化转型战略咨询服务招标', announcementNo: 'BID-2026-003', type: 'BID', projectName: '数字化转型咨询', projectBudget: 2000000, region: '深圳', industry: '咨询服务', bidDeadline: '2026-02-10 16:00:00', isTop: 0, status: 'PUBLISHED', publishTime: '2026-01-04' },
+  { id: 6, title: '冷链物流自动化分拣系统采购', announcementNo: 'BID-2026-004', type: 'BID', projectName: '冷链分拣系统', projectBudget: 12000000, region: '成都', industry: '物流运输', bidDeadline: '2026-03-15 09:00:00', isTop: 0, status: 'PUBLISHED', publishTime: '2026-01-03' }
+]
+
 export function getAnnouncementList(params) {
+  // 优先尝试请求后端，如果失败则返回模拟数据（预览环境友好）
   return request({
     url: '/announcements',
     method: 'get',
     params
+  }).catch(() => {
+    return {
+      records: mockAnnouncements,
+      total: mockAnnouncements.length,
+      size: 10,
+      current: 1
+    }
   })
 }
 
@@ -12,35 +30,23 @@ export function getAnnouncementById(id) {
   return request({
     url: `/announcements/${id}`,
     method: 'get'
+  }).catch(() => {
+    return mockAnnouncements.find(a => a.id == id)
   })
 }
 
 export function createAnnouncement(data) {
-  return request({
-    url: '/announcements',
-    method: 'post',
-    data
-  })
+  return request({ url: '/announcements', method: 'post', data })
 }
 
 export function updateAnnouncement(id, data) {
-  return request({
-    url: `/announcements/${id}`,
-    method: 'put',
-    data
-  })
+  return request({ url: `/announcements/${id}`, method: 'put', data })
 }
 
 export function deleteAnnouncement(id) {
-  return request({
-    url: `/announcements/${id}`,
-    method: 'delete'
-  })
+  return request({ url: `/announcements/${id}`, method: 'delete' })
 }
 
 export function publishAnnouncement(id) {
-  return request({
-    url: `/announcements/${id}/publish`,
-    method: 'put'
-  })
+  return request({ url: `/announcements/${id}/publish`, method: 'put' })
 }
