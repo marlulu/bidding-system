@@ -83,13 +83,13 @@
     </el-footer>
 
     <!-- 登录弹窗 -->
-    <el-dialog v-model="showLoginDialog" title="用户登录" width="400px" center>
+    <el-dialog v-model="showLoginDialog" title="用户登录" width="400px" center :close-on-click-modal="false">
       <el-form :model="loginForm" label-position="top">
         <el-form-item label="用户名">
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" @keyup.enter="handleLogin" />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="loginForm.password" type="password" show-password placeholder="请输入密码" />
+          <el-input v-model="loginForm.password" type="password" show-password placeholder="请输入密码" @keyup.enter="handleLogin" />
         </el-form-item>
         <div class="login-options">
           <el-checkbox v-model="loginForm.remember">记住登录</el-checkbox>
@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { Platform, ArrowDown } from '@element-plus/icons-vue'
@@ -136,6 +136,13 @@ const loginForm = reactive({
   remember: false
 })
 
+// 监听路由变化，如果跳转到 /login 且有 redirect 参数，则弹出登录框
+watch(() => route.path, (newPath) => {
+  if (newPath === '/login' && route.query.redirect) {
+    showLoginDialog.value = true
+  }
+}, { immediate: true })
+
 const handleLogin = async () => {
   if (!loginForm.username || !loginForm.password) {
     return ElMessage.warning('请输入用户名和密码')
@@ -145,6 +152,14 @@ const handleLogin = async () => {
     await userStore.login(loginForm)
     ElMessage.success('登录成功')
     showLoginDialog.value = false
+    
+    // 登录成功后，如果有重定向地址，则跳转
+    const redirect = route.query.redirect
+    if (redirect) {
+      router.push(redirect)
+    } else if (route.path === '/login') {
+      router.push('/')
+    }
   } catch (error) {
     ElMessage.error(error.message || '登录失败')
   } finally {
@@ -161,6 +176,12 @@ const handleCommand = (command) => {
     router.push(`/${command}`)
   }
 }
+
+onMounted(() => {
+  if (route.path === '/login') {
+    showLoginDialog.value = true
+  }
+})
 </script>
 
 <style scoped>

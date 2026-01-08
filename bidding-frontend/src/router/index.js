@@ -16,115 +16,61 @@ const routes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/Dashboard.vue'),
-        meta: { title: '首页' }
+        meta: { title: '首页', requiresAuth: false }
       },
       {
         path: 'announcements',
         name: 'AnnouncementList',
         component: () => import('@/views/announcement/List.vue'),
-        meta: { title: '招标公告' }
-      },
-      {
-        path: 'announcements/create',
-        name: 'AnnouncementCreate',
-        component: () => import('@/views/announcement/Form.vue'),
-        meta: { title: '创建招标公告', requireAdmin: true }
-      },
-      {
-        path: 'announcements/edit/:id',
-        name: 'AnnouncementEdit',
-        component: () => import('@/views/announcement/Form.vue'),
-        meta: { title: '编辑招标公告', requireAdmin: true }
+        meta: { title: '招标信息', requiresAuth: false }
       },
       {
         path: 'announcements/detail/:id',
         name: 'AnnouncementDetail',
         component: () => import('@/views/announcement/Detail.vue'),
-        meta: { title: '招标公告详情' }
+        meta: { title: '招标公告详情', requiresAuth: true }
       },
       {
         path: 'suppliers',
         name: 'SupplierList',
         component: () => import('@/views/supplier/List.vue'),
-        meta: { title: '供应商管理' }
-      },
-      {
-        path: 'suppliers/create',
-        name: 'SupplierCreate',
-        component: () => import('@/views/supplier/Form.vue'),
-        meta: { title: '创建供应商', requireAdmin: true }
-      },
-      {
-        path: 'suppliers/edit/:id',
-        name: 'SupplierEdit',
-        component: () => import('@/views/supplier/Form.vue'),
-        meta: { title: '编辑供应商', requireAdmin: true }
+        meta: { title: '供应商管理', requiresAuth: false }
       },
       {
         path: 'suppliers/detail/:id',
         name: 'SupplierDetail',
         component: () => import('@/views/supplier/Detail.vue'),
-        meta: { title: '供应商详情' }
+        meta: { title: '供应商详情', requiresAuth: true }
       },
       {
         path: 'policies',
         name: 'PolicyList',
         component: () => import('@/views/policy/List.vue'),
-        meta: { title: '政策法规' }
-      },
-      {
-        path: 'policies/create',
-        name: 'PolicyCreate',
-        component: () => import('@/views/policy/Form.vue'),
-        meta: { title: '创建政策法规', requireAdmin: true }
-      },
-      {
-        path: 'policies/edit/:id',
-        name: 'PolicyEdit',
-        component: () => import('@/views/policy/Form.vue'),
-        meta: { title: '编辑政策法规', requireAdmin: true }
+        meta: { title: '政策法规', requiresAuth: false }
       },
       {
         path: 'policies/detail/:id',
         name: 'PolicyDetail',
         component: () => import('@/views/policy/Detail.vue'),
-        meta: { title: '政策法规详情' }
+        meta: { title: '政策法规详情', requiresAuth: true }
       },
       {
         path: 'notices',
         name: 'NoticeList',
         component: () => import('@/views/notice/List.vue'),
-        meta: { title: '系统通知' }
-      },
-      {
-        path: 'notices/create',
-        name: 'NoticeCreate',
-        component: () => import('@/views/notice/Form.vue'),
-        meta: { title: '创建系统通知', requireAdmin: true }
-      },
-      {
-        path: 'notices/detail/:id',
-        name: 'NoticeDetail',
-        component: () => import('@/views/notice/Detail.vue'),
-        meta: { title: '系统通知详情' }
-      },
-      {
-        path: 'users',
-        name: 'UserList',
-        component: () => import('@/views/user/List.vue'),
-        meta: { title: '用户管理', requireAdmin: true }
+        meta: { title: '系统通知', requiresAuth: true }
       },
       {
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/user/Profile.vue'),
-        meta: { title: '个人中心' }
+        meta: { title: '个人中心', requiresAuth: true }
       },
       {
         path: 'favorites',
         name: 'Favorites',
         component: () => import('@/views/user/Profile.vue'),
-        meta: { title: '我的收藏' }
+        meta: { title: '我的收藏', requiresAuth: true }
       }
     ]
   }
@@ -137,6 +83,12 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = getToken()
+  
+  // 设置页面标题
+  if (to.meta.title) {
+    document.title = `${to.meta.title} - 内部招标采购门户`
+  }
+
   if (to.path === '/login') {
     if (token) {
       next('/')
@@ -144,8 +96,13 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if (!token && to.path !== '/dashboard' && to.path !== '/announcements' && !to.path.startsWith('/announcements/detail')) {
-      next('/login')
+    // 检查是否需要登录
+    if (to.meta.requiresAuth && !token) {
+      // 如果需要登录但没有 token，跳转到登录页，并记录来源页面
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath }
+      })
     } else {
       next()
     }
