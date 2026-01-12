@@ -1,0 +1,1 @@
+import{K as t}from"./index-BnRauf0p.js";function o(e){return t({url:"/policies",method:"get",params:e})}function l(e){return t({url:`/policies/${e}`,method:"get"})}function r(e){return t({url:`/policies/${e}`,method:"delete"})}function u(e){return t({url:`/policies/${e}/publish`,method:"put"})}export{l as a,r as d,o as g,u as p};
