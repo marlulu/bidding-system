@@ -15,13 +15,21 @@ request.interceptors.request.use(
     if (token) {
       // 确保携带 Bearer 前缀，与后端 Constants.JWT_PREFIX 保持一致
       config.headers['Authorization'] = `Bearer ${token}`
-      console.log(`[Request] 携带 Token 发送请求: ${config.url}`)
+      console.log(`[Request] 携带 Token 发送请求: ${config.url}`, {
+        tokenPreview: token.substring(0, 20) + '...',
+        method: config.method,
+        timestamp: new Date().toISOString()
+      })
     } else {
-      console.warn(`[Request] 未携带 Token 发送请求: ${config.url}`)
+      console.warn(`[Request] 未携带 Token 发送请求: ${config.url}`, {
+        method: config.method,
+        timestamp: new Date().toISOString()
+      })
     }
     return config
   },
   error => {
+    console.error('[Request] 请求拦截器错误:', error)
     return Promise.reject(error)
   }
 )
@@ -31,10 +39,16 @@ request.interceptors.response.use(
   response => {
     const res = response.data
     
+    console.log(`[Response] 收到响应: ${response.config.url}`, {
+      code: res.code,
+      status: response.status,
+      timestamp: new Date().toISOString()
+    })
+    
     if (res.code !== 200) {
       // 401未授权，清除状态并触发登录弹窗
       if (res.code === 401) {
-        console.error(`[Response] 401 未授权: ${response.config.url}`)
+        console.error(`[Response] 401 未授权: ${response.config.url}`, res.message)
         const userStore = useUserStore()
         userStore.logout()
         userStore.loginDialogVisible = true
@@ -49,6 +63,13 @@ request.interceptors.response.use(
     return res.data
   },
   error => {
+    console.error('[Response] 响应错误:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      message: error.message,
+      timestamp: new Date().toISOString()
+    })
+    
     if (error.response && error.response.status === 401) {
       console.error(`[Response] 401 错误拦截: ${error.config.url}`)
       const userStore = useUserStore()
