@@ -61,10 +61,12 @@ public class AnnouncementController {
     }
 
     @PutMapping("/{id}")
-    public Result<Void> updateAnnouncement(@PathVariable Long id, @RequestBody Announcement announcement) {
+    public Result<Void> updateAnnouncement(@PathVariable Long id, @RequestBody Announcement announcement, HttpServletRequest request) {
         try {
+            Long currentUserId = (Long) request.getAttribute("userId");
+            String currentUserRole = (String) request.getAttribute("role");
             announcement.setId(id);
-            announcementService.updateAnnouncement(announcement);
+            announcementService.updateAnnouncement(announcement, currentUserId, currentUserRole);
             return Result.success("更新成功", null);
         } catch (Exception e) {
             return Result.error(e.getMessage());

@@ -83,7 +83,27 @@ public class AnnouncementService {
     }
 
     @Transactional
-    public void updateAnnouncement(Announcement announcement) {
+    public void updateAnnouncement(Announcement announcement, Long currentUserId, String currentUserRole) {
+        Announcement existingAnnouncement = announcementMapper.selectById(announcement.getId());
+        if (existingAnnouncement == null) {
+            throw new RuntimeException("公告不存在");
+        }
+
+        // 权限校验：只有管理员或发布者本人可以修改
+        if (!Constants.ROLE_ADMIN.equals(currentUserRole) && !existingAnnouncement.getPublisherId().equals(currentUserId)) {
+            throw new RuntimeException("无权修改该公告");
+        }
+
+        // 如果公告状态是已发布，且当前用户不是管理员，则不允许修改某些关键字段
+        // 这里简化处理，允许管理员修改所有字段，普通发布者在已发布状态下不允许修改
+        if (Constants.ANNOUNCEMENT_STATUS_PUBLISHED.equals(existingAnnouncement.getStatus()) && !Constants.ROLE_ADMIN.equals(currentUserRole)) {
+            // 示例：不允许普通发布者修改已发布公告的标题和内容
+            if (!existingAnnouncement.getTitle().equals(announcement.getTitle()) || !existingAnnouncement.getContent().equals(announcement.getContent())) {
+                throw new RuntimeException("已发布的公告，普通用户无权修改标题或内容");
+            }
+            // 其他字段可以根据业务需求进行更细致的控制
+        }
+
         announcementMapper.updateById(announcement);
     }
 
