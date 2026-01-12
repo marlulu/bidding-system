@@ -67,7 +67,7 @@
             </template>
 
             <!-- 非管理员模式下的标题 -->
-            <div v-else class="card-tag" v-if="item.isTop">置顶</div>
+            <div v-if="!userStore.isAdmin() && item.isTop" class="card-tag">置顶</div>
             <h3 v-if="!userStore.isAdmin()" class="title" @click="handleDetail(item.id)">{{ item.title }}</h3>
 
             <!-- 公告类型标签 -->
