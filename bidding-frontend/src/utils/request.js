@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { getToken, removeToken } from './auth'
-import router from '@/router'
 
 const request = axios.create({
   baseURL: '/api',
@@ -30,10 +29,11 @@ request.interceptors.response.use(
     if (res.code !== 200) {
       ElMessage.error(res.message || '请求失败')
       
-      // 401未授权，跳转到登录页
+      // 401未授权，清除状态并刷新
       if (res.code === 401) {
         removeToken()
-        router.push('/login')
+        localStorage.removeItem('userInfo')
+        window.location.reload()
       }
       
       return Promise.reject(new Error(res.message || '请求失败'))
@@ -43,9 +43,10 @@ request.interceptors.response.use(
   },
   error => {
     if (error.response && error.response.status === 401) {
-      ElMessage.error('未授权，请先登录')
+      ElMessage.error('登录已过期，请重新登录')
       removeToken()
-      router.push('/login')
+      localStorage.removeItem('userInfo')
+      window.location.reload()
     } else {
       ElMessage.error(error.message || '网络错误')
     }

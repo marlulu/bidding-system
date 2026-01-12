@@ -1,42 +1,49 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { login as loginApi, getUserInfo as getUserInfoApi } from '@/api/auth'
-import { setToken, removeToken } from '@/utils/auth'
+import { setToken, removeToken, getToken } from '@/utils/auth'
 
 export const useUserStore = defineStore('user', () => {
-  const userInfo = ref(null)
-  const token = ref('')
+  // 初始状态从 localStorage 恢复
+  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+  const token = ref(getToken() || '')
   const loginDialogVisible = ref(false)
 
   const login = async (loginForm) => {
     const data = await loginApi(loginForm)
     token.value = data.token
-    userInfo.value = data.userInfo
     setToken(data.token)
+    
+    // 登录成功后获取用户信息
+    await getUserInfo()
     return data
   }
 
   const getUserInfo = async () => {
-    const data = await getUserInfoApi()
-    userInfo.value = data
-    return data
+    try {
+      const data = await getUserInfoApi()
+      userInfo.value = data
+      // 持久化用户信息
+      localStorage.setItem('userInfo', JSON.stringify(data))
+      return data
+    } catch (error) {
+      // 如果获取失败（如 token 过期），则清除状态
+      logout()
+      throw error
+    }
   }
 
   const logout = () => {
     token.value = ''
     userInfo.value = null
     removeToken()
+    localStorage.removeItem('userInfo')
   }
 
-  const isAdmin = () => {
-    return userInfo.value && userInfo.value.role === 'ADMIN'
-  }
+  const isAdmin = () => userInfo.value?.role === 'ADMIN'
+  const isSupplier = () => userInfo.value?.role === 'SUPPLIER'
 
-  const isSupplier = () => {
-    return userInfo.value && userInfo.value.role === 'SUPPLIER'
-  }
-
-  const isLoggedIn = computed(() => !!token.value || !!localStorage.getItem('token'))
+  const isLoggedIn = computed(() => !!token.value)
 
   return {
     userInfo,
