@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getToken } from '@/utils/auth'
+import { useUserStore } from '@/stores/user'
 
 const routes = [
   {
@@ -78,6 +79,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = getToken()
+  const userStore = useUserStore()
   
   // 设置页面标题
   if (to.meta.title) {
@@ -85,7 +87,6 @@ router.beforeEach((to, from, next) => {
   }
 
   // 1. 检查路由元信息中的 requiresAuth
-  // 显式判断 false，确保首页和列表页绝对放行
   if (to.meta.requiresAuth === false) {
     next()
     return
@@ -93,18 +94,16 @@ router.beforeEach((to, from, next) => {
 
   // 2. 如果需要登录但没有 token
   if (to.meta.requiresAuth && !token) {
-    // 不再跳转到 /login 页面，而是留在当前页并触发登录弹窗
-    // 我们通过 query 参数通知 Layout 组件弹出登录框
-    if (to.path !== '/dashboard') {
-      next({
-        path: '/dashboard',
-        query: { login: 'true', redirect: to.fullPath }
-      })
+    // 触发全局登录弹窗
+    userStore.loginDialogVisible = true
+    
+    // 如果是从首页或列表页点击进入的，保持在原页面，不进行跳转
+    // 这样用户登录成功后，可以直接再次点击或由逻辑自动触发进入
+    if (from.path && from.path !== '/') {
+      next(false) // 中断当前导航，留在原处
     } else {
-      next({
-        path: '/dashboard',
-        query: { login: 'true' }
-      })
+      // 如果是直接输入 URL 进入受限页面，则跳转到首页并弹窗
+      next({ path: '/', query: { redirect: to.fullPath } })
     }
   } else {
     next()

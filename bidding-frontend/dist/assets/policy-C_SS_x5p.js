@@ -1,0 +1,1 @@
+import{r as t}from"./request--6APTGSy.js";function o(e){return t({url:"/policies",method:"get",params:e})}function r(e){return t({url:`/policies/${e}`,method:"get"})}function l(e){return t({url:`/policies/${e}`,method:"delete"})}function u(e){return t({url:`/policies/${e}/publish`,method:"put"})}export{r as a,l as d,o as g,u as p};

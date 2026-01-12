@@ -46,8 +46,8 @@
           
           <!-- 未登录状态：显示登录和注册按钮 -->
           <template v-else>
-            <el-button type="primary" plain @click="showLoginDialog = true">登录</el-button>
-            <el-button type="warning" @click="router.push('/register')">注册</el-button>
+            <el-button type="primary" plain @click="userStore.loginDialogVisible = true">登录</el-button>
+            <el-button type="warning" @click="handleRegister">注册</el-button>
           </template>
         </div>
       </div>
@@ -85,8 +85,15 @@
       </div>
     </el-footer>
 
-    <!-- 登录弹窗 -->
-    <el-dialog v-model="showLoginDialog" title="用户登录" width="400px" center :close-on-click-modal="false">
+    <!-- 登录弹窗 (由全局状态控制) -->
+    <el-dialog 
+      v-model="userStore.loginDialogVisible" 
+      title="用户登录" 
+      width="400px" 
+      center 
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
       <el-form :model="loginForm" label-position="top">
         <el-form-item label="用户名">
           <el-input v-model="loginForm.username" placeholder="请输入用户名" @keyup.enter="handleLogin" />
@@ -102,7 +109,7 @@
       <template #footer>
         <el-button type="primary" @click="handleLogin" :loading="loading" style="width: 100%">立即登录</el-button>
         <div style="margin-top: 15px; text-align: center">
-          还没有账号？<el-link type="warning" @click="showLoginDialog = false; router.push('/register')">立即注册</el-link>
+          还没有账号？<el-link type="warning" @click="userStore.loginDialogVisible = false; handleRegister()">立即注册</el-link>
         </div>
       </template>
     </el-dialog>
@@ -110,7 +117,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, watch, onMounted } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { Platform, ArrowDown } from '@element-plus/icons-vue'
@@ -132,7 +139,6 @@ const activeMenu = computed(() => {
   return path
 })
 
-const showLoginDialog = ref(false)
 const loading = ref(false)
 
 const loginForm = reactive({
@@ -140,13 +146,6 @@ const loginForm = reactive({
   password: '',
   remember: false
 })
-
-// 监听路由变化，如果跳转到 /login 且有 redirect 参数，则弹出登录框
-watch(() => route.path, (newPath) => {
-  if (newPath === '/login' && route.query.redirect) {
-    showLoginDialog.value = true
-  }
-}, { immediate: true })
 
 const handleLogin = async () => {
   if (!loginForm.username || !loginForm.password) {
@@ -156,20 +155,22 @@ const handleLogin = async () => {
   try {
     await userStore.login(loginForm)
     ElMessage.success('登录成功')
-    showLoginDialog.value = false
+    userStore.loginDialogVisible = false
     
     // 登录成功后，如果有重定向地址，则跳转
     const redirect = route.query.redirect
     if (redirect) {
       router.push(redirect)
-    } else if (route.path === '/login') {
-      router.push('/')
     }
   } catch (error) {
     ElMessage.error(error.message || '登录失败')
   } finally {
     loading.value = false
   }
+}
+
+const handleRegister = () => {
+  ElMessage.info('注册功能开发中...')
 }
 
 const handleCommand = (command) => {
@@ -181,12 +182,6 @@ const handleCommand = (command) => {
     router.push(`/${command}`)
   }
 }
-
-onMounted(() => {
-  if (route.path === '/login') {
-    showLoginDialog.value = true
-  }
-})
 </script>
 
 <style scoped>

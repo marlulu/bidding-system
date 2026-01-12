@@ -6,6 +6,7 @@ import { setToken, removeToken } from '@/utils/auth'
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref(null)
   const token = ref('')
+  const loginDialogVisible = ref(false)
 
   const login = async (loginForm) => {
     const data = await loginApi(loginForm)
@@ -40,6 +41,7 @@ export const useUserStore = defineStore('user', () => {
   return {
     userInfo,
     token,
+    loginDialogVisible,
     isLoggedIn,
     login,
     getUserInfo,
