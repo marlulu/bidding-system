@@ -1,6 +1,6 @@
 /*
  内部招标网站系统数据库脚本 (修复版)
- 修复了 Supplier 模块字段不一致的问题
+ 修复了初始账号密码加密不匹配的问题
 */
 
 CREATE DATABASE IF NOT EXISTS `bidding_system` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -27,7 +27,13 @@ CREATE TABLE `sys_user` (
   UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. 供应商表 (增加缺失字段)
+-- 初始用户 (密码均为 admin123 的 MD5 加密值: 0192023a7bbd73250516f069df18b500)
+INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `avatar`) VALUES 
+('admin', '0192023a7bbd73250516f069df18b500', '系统管理员', 'ADMIN', 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin'),
+('supplier_tech', '0192023a7bbd73250516f069df18b500', '技术部经理', 'SUPPLIER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=tech'),
+('supplier_const', '0192023a7bbd73250516f069df18b500', '工程部总监', 'SUPPLIER', 'https://api.dicebear.com/7.x/avataaars/svg?seed=const');
+
+-- 2. 供应商表
 DROP TABLE IF EXISTS `supplier`;
 CREATE TABLE `supplier` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -39,13 +45,13 @@ CREATE TABLE `supplier` (
   `legal_person` varchar(50) DEFAULT NULL,
   `contact_name` varchar(50) NOT NULL,
   `contact_phone` varchar(20) NOT NULL,
-  `contact_email` varchar(100) DEFAULT NULL, -- 修复缺失字段
+  `contact_email` varchar(100) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
   `description` text,
-  `qualification_files` text, -- 修复缺失字段
+  `qualification_files` text,
   `status` tinyint(1) NOT NULL DEFAULT 1,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 修复缺失字段
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
