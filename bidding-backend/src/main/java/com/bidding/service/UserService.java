@@ -13,12 +13,14 @@ import com.bidding.util.JwtUtil;
 import com.bidding.util.PasswordUtil;
 import com.bidding.vo.LoginVO;
 import com.bidding.vo.UserVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -35,22 +37,29 @@ public class UserService {
      * 用户登录
      */
     public LoginVO login(LoginRequest request) {
+        log.info("尝试登录用户: {}", request.getUsername());
+        
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, request.getUsername());
         User user = userMapper.selectOne(wrapper);
 
         if (user == null) {
+            log.error("登录失败: 用户 {} 不存在", request.getUsername());
             throw new RuntimeException("用户名或密码错误");
         }
 
+        log.info("用户存在，开始验证密码...");
         if (!PasswordUtil.verify(request.getPassword(), user.getPassword())) {
+            log.error("登录失败: 用户 {} 密码错误", request.getUsername());
             throw new RuntimeException("用户名或密码错误");
         }
 
         if (user.getStatus().equals(Constants.USER_STATUS_DISABLED)) {
+            log.error("登录失败: 用户 {} 账号已被禁用", request.getUsername());
             throw new RuntimeException("账号已被禁用");
         }
 
+        log.info("登录成功: {}", request.getUsername());
         // 生成Token
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
 
