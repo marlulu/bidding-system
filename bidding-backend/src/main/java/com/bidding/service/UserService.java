@@ -48,7 +48,7 @@ public class UserService {
             throw new RuntimeException("用户名或密码错误");
         }
 
-        log.info("用户存在，开始验证密码...");
+        log.info("用户存在 (ID: {}), 开始验证密码...", user.getId());
         if (!PasswordUtil.verify(request.getPassword(), user.getPassword())) {
             log.error("登录失败: 用户 {} 密码错误", request.getUsername());
             throw new RuntimeException("用户名或密码错误");
@@ -59,7 +59,7 @@ public class UserService {
             throw new RuntimeException("账号已被禁用");
         }
 
-        log.info("登录成功: {}", request.getUsername());
+        log.info("登录成功: {} (ID: {})", request.getUsername(), user.getId());
         // 生成Token
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
 
@@ -72,10 +72,19 @@ public class UserService {
      * 获取用户信息
      */
     public UserVO getUserInfo(Long userId) {
+        log.info("正在获取用户信息, userId: {}", userId);
+        if (userId == null) {
+            log.error("获取用户信息失败: userId 为空");
+            throw new RuntimeException("用户未登录");
+        }
+        
         User user = userMapper.selectById(userId);
         if (user == null) {
+            log.error("获取用户信息失败: 数据库中找不到 ID 为 {} 的用户", userId);
             throw new RuntimeException("用户不存在");
         }
+        
+        log.info("成功获取用户信息: {}", user.getUsername());
         return convertToVO(user);
     }
 
