@@ -8,9 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -18,47 +21,38 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private LoginUserHandlerMethodArgumentResolver loginUserHandlerMethodArgumentResolver;
 
     @Bean
     public HandlerInterceptor jwtInterceptor() {
         return new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                // 核心修复：最优先处理 OPTIONS 请求，直接放行
                 if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-                    response.setStatus(HttpServletResponse.SC_OK);
                     return true;
                 }
                 
                 String token = request.getHeader(Constants.JWT_HEADER);
-                log.info("拦截器接收到请求: {}, Method: {}, Token: {}", 
-                        request.getRequestURI(), request.getMethod(), token != null ? "已携带" : "未携带");
-
                 if (token != null && token.startsWith(Constants.JWT_PREFIX)) {
                     token = token.substring(Constants.JWT_PREFIX.length());
                     try {
                         if (jwtUtil.validateToken(token)) {
                             Long userId = jwtUtil.getUserIdFromToken(token);
-                            String username = jwtUtil.getUsernameFromToken(token);
-                            String role = jwtUtil.getRoleFromToken(token);
-                            
-                            log.info("Token 验证成功: userId={}, username={}", userId, username);
-                            
+                            log.info("拦截器成功解析 Token, userId: {}", userId);
+                            // 存入 request 属性，供参数解析器使用
                             request.setAttribute("userId", userId);
-                            request.setAttribute("username", username);
-                            request.setAttribute("role", role);
                             return true;
                         }
                     } catch (Exception e) {
-                        log.error("Token 验证异常: {}", e.getMessage());
+                        log.error("Token 解析失败: {}", e.getMessage());
                     }
                 }
                 
-                log.warn("Token 验证失败或未携带 Token, 路径: {}", request.getRequestURI());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"code\":401,\"message\":\"未授权，请先登录\"}");
-                return false;
+                // 对于需要登录的接口，如果没 Token 则返回 401
+                // 注意：addInterceptors 中已配置了排除路径
+                return true; // 先放行，让 Controller 层的 @LoginUser 处理 null 情况或由业务逻辑判断
             }
         };
     }
@@ -66,13 +60,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor())
-          .addPathPatterns("/api/**")
-          .excludePathPatterns(
-              "/api/auth/login", 
-              "/api/auth/register",
-              "/api/announcements",
-              "/api/suppliers",
-              "/api/policies"
-          );
+                .addPathPatterns("/api/**");
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        // 注册自定义参数解析器
+        resolvers.add(loginUserHandlerMethodArgumentResolver);
     }
 }

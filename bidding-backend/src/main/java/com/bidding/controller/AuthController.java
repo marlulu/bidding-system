@@ -1,11 +1,11 @@
 package com.bidding.controller;
 
+import com.bidding.common.LoginUser;
 import com.bidding.common.Result;
 import com.bidding.dto.LoginRequest;
 import com.bidding.service.UserService;
 import com.bidding.vo.LoginVO;
 import com.bidding.vo.UserVO;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,9 +34,11 @@ public class AuthController {
      * 获取当前用户信息
      */
     @GetMapping("/info")
-    public Result<UserVO> getUserInfo(HttpServletRequest request) {
+    public Result<UserVO> getUserInfo(@LoginUser Long userId) {
+        if (userId == null) {
+            return Result.error(401, "未登录或登录已过期");
+        }
         try {
-            Long userId = (Long) request.getAttribute("userId");
             UserVO userVO = userService.getUserInfo(userId);
             return Result.success(userVO);
         } catch (Exception e) {
