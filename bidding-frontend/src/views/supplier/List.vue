@@ -2,9 +2,9 @@
   <div class="supplier-list container">
     <h1 class="page-title">优质供应商库</h1>
 
-    <!-- 分类导航与标签云 -->
+    <!-- 筛选栏 -->
     <el-card class="filter-card" shadow="never">
-      <div class="filter-section">
+      <div v-if="!userStore.isAdmin()" class="filter-section">
         <span class="label">行业分类：</span>
         <div class="tag-cloud">
           <el-tag
@@ -18,7 +18,7 @@
           </el-tag>
         </div>
       </div>
-      <el-divider border-style="dashed" />
+      <el-divider v-if="!userStore.isAdmin()" border-style="dashed" />
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="企业规模">
           <el-select v-model="searchForm.scale" placeholder="全部规模" clearable style="width: 150px">
@@ -27,11 +27,18 @@
             <el-option label="小型企业" value="SMALL" />
           </el-select>
         </el-form-item>
-        <el-form-item label="资质等级">
+        <el-form-item v-if="!userStore.isAdmin()" label="资质等级">
           <el-select v-model="searchForm.qualificationLevel" placeholder="全部等级" clearable style="width: 150px">
             <el-option label="一级资质" value="一级资质" />
             <el-option label="二级资质" value="二级资质" />
             <el-option label="三级资质" value="三级资质" />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="userStore.isAdmin()" label="认证状态">
+          <el-select v-model="searchForm.status" placeholder="全部状态" clearable style="width: 150px">
+            <el-option label="待审核" :value="0" />
+            <el-option label="已认证" :value="1" />
+            <el-option label="已驳回" :value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -47,8 +54,38 @@
       </el-form>
     </el-card>
 
-    <!-- 供应商列表 -->
-    <div v-loading="loading">
+    <!-- 供应商列表 - 管理员表格视图 -->
+    <div v-if="userStore.isAdmin()" v-loading="loading" class="admin-view">
+      <el-table :data="tableData" stripe style="width: 100%; margin-bottom: 20px">
+        <el-table-column prop="companyName" label="公司名称" min-width="200" />
+        <el-table-column prop="companyCode" label="统一社会信用代码" width="180" />
+        <el-table-column prop="industry" label="行业" width="100" />
+        <el-table-column prop="scale" label="企业规模" width="100">
+          <template #default="{ row }">
+            {{ formatScale(row.scale) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="认证状态" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.status === 0" type="info">待审核</el-tag>
+            <el-tag v-else-if="row.status === 1" type="success">已认证</el-tag>
+            <el-tag v-else-if="row.status === 2" type="danger">已驳回</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="contactName" label="联系人" width="100" />
+        <el-table-column prop="contactPhone" label="联系电话" width="130" />
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
+            <el-button type="warning" link size="small" @click="handleAudit(row.id)">审核</el-button>
+            <el-button type="danger" link size="small" @click="handleDelete(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 供应商列表 - 普通用户卡片视图 -->
+    <div v-else v-loading="loading" class="user-view">
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :md="6" v-for="item in tableData" :key="item.id">
           <el-card class="card-item supplier-card" shadow="hover" @click="handleDetail(item.id)">
@@ -67,19 +104,19 @@
           </el-card>
         </el-col>
       </el-row>
+    </div>
 
-      <el-empty v-if="tableData.length === 0" description="暂无相关供应商信息" />
+    <el-empty v-if="tableData.length === 0" description="暂无相关供应商信息" />
 
-      <!-- 分页 -->
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          layout="total, prev, pager, next, jumper"
-          @current-change="loadData"
-        />
-      </div>
+    <!-- 分页 -->
+    <div class="pagination">
+      <el-pagination
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.size"
+        :total="pagination.total"
+        layout="total, prev, pager, next, jumper"
+        @current-change="loadData"
+      />
     </div>
   </div>
 </template>
@@ -88,9 +125,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Search, OfficeBuilding } from '@element-plus/icons-vue'
-import { getSupplierList } from '@/api/supplier'
+import { getSupplierList, deleteSupplier } from '@/api/supplier'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -104,12 +141,13 @@ const searchForm = reactive({
   industry: route.query.industry || '',
   scale: '',
   qualificationLevel: '',
+  status: '',
   keyword: ''
 })
 
 const pagination = reactive({
   page: 1,
-  size: 12,
+  size: userStore.isAdmin() ? 10 : 12,
   total: 0
 })
 
@@ -117,7 +155,9 @@ const loadData = async () => {
   loading.value = true
   try {
     const params = { ...searchForm }
-    if (params.industry === '全部') params.industry = ''
+    if (!userStore.isAdmin() && params.industry === '全部') {
+      params.industry = ''
+    }
     const res = await getSupplierList({
       page: pagination.page,
       size: pagination.size,
@@ -146,6 +186,31 @@ const handleDetail = (id) => {
   router.push(`/suppliers/detail/${id}`)
 }
 
+const handleEdit = (id) => {
+  router.push(`/suppliers/edit/${id}`)
+}
+
+const handleAudit = (id) => {
+  router.push(`/suppliers/audit/${id}`)
+}
+
+const handleDelete = async (id) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该供应商吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    await deleteSupplier(id)
+    ElMessage.success('删除成功')
+    loadData()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除失败', error)
+    }
+  }
+}
+
 const handleContact = (supplier) => {
   ElMessage.success(`已向 ${supplier.companyName} 发送联系请求，请等待回复。`)
 }
@@ -162,7 +227,7 @@ onMounted(() => {
 
 <style scoped>
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -193,6 +258,17 @@ onMounted(() => {
 .filter-tag {
   cursor: pointer;
   transition: all 0.3s;
+}
+
+.admin-view {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.user-view {
+  margin-top: 20px;
 }
 
 .supplier-card {

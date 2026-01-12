@@ -6,12 +6,22 @@ import com.bidding.entity.Supplier;
 import com.bidding.service.SupplierService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.bidding.common.Constants;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/suppliers")
 public class SupplierController {
+
+    private void checkAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("role");
+        if (!Constants.ROLE_ADMIN.equals(role)) {
+            throw new RuntimeException("无权操作");
+        }
+    }
+
 
     @Autowired
     private SupplierService supplierService;
@@ -65,7 +75,8 @@ public class SupplierController {
      * 创建供应商
      */
     @PostMapping
-    public Result<Void> createSupplier(@RequestBody Supplier supplier) {
+    public Result<Void> createSupplier(@RequestBody Supplier supplier, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             supplierService.createSupplier(supplier);
             return Result.success("创建成功", null);
@@ -78,7 +89,8 @@ public class SupplierController {
      * 更新供应商
      */
     @PutMapping("/{id}")
-    public Result<Void> updateSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
+    public Result<Void> updateSupplier(@PathVariable Long id, @RequestBody Supplier supplier, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             supplier.setId(id);
             supplierService.updateSupplier(supplier);
@@ -92,7 +104,8 @@ public class SupplierController {
      * 删除供应商
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteSupplier(@PathVariable Long id) {
+    public Result<Void> deleteSupplier(@PathVariable Long id, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             supplierService.deleteSupplier(id);
             return Result.success("删除成功", null);
@@ -105,7 +118,8 @@ public class SupplierController {
      * 更新供应商状态
      */
     @PutMapping("/{id}/status")
-    public Result<Void> updateSupplierStatus(@PathVariable Long id, @RequestBody Supplier supplier) {
+    public Result<Void> updateSupplierStatus(@PathVariable Long id, @RequestBody Supplier supplier, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             supplierService.updateSupplierStatus(id, supplier.getStatus());
             return Result.success("状态更新成功", null);
