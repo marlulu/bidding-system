@@ -39,6 +39,24 @@ const routes = [
         meta: { title: '供应商详情', requiresAuth: true }
       },
       {
+        path: 'suppliers/audit',
+        name: 'SupplierAudit',
+        component: () => import('@/views/supplier/Audit.vue'),
+        meta: { title: '供应商审核', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'announcements/create',
+        name: 'AnnouncementCreate',
+        component: () => import('@/views/announcement/Form.vue'),
+        meta: { title: '发布招标公告', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'announcements/edit/:id',
+        name: 'AnnouncementEdit',
+        component: () => import('@/views/announcement/Form.vue'),
+        meta: { title: '编辑招标公告', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
         path: 'policies',
         name: 'PolicyList',
         component: () => import('@/views/policy/List.vue'),
