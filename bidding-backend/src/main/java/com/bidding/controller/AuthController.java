@@ -34,24 +34,6 @@ public class AuthController {
         }
     }
 
-    /**
-     * 获取当前用户信息
-     */
-    @GetMapping("/info")
-    public Result<UserVO> getUserInfo(@LoginUser Long userId) {
-        log.info("AuthController received request for /info, userId: {}", userId);
-        if (userId == null) {
-            return Result.error(401, "未登录或登录已过期");
-        }
-        try {
-            UserVO userVO = userService.getUserInfo(userId);
-            log.info("Successfully retrieved user info for userId: {}", userId);
-            return Result.success(userVO);
-        } catch (Exception e) {
-            log.error("Error retrieving user info for userId: {}: {}", userId, e.getMessage());
-            return Result.error(e.getMessage());
-        }
-    }
 
     /**
      * 用户登出
