@@ -25,10 +25,11 @@
         </el-menu>
 
         <div class="user-info">
-          <template v-if="userStore.isLogin">
-            <el-dropdown @command="handleCommand">
+          <!-- 已登录状态：显示头像下拉菜单 -->
+          <template v-if="userStore.isLoggedIn">
+            <el-dropdown @command="handleCommand" trigger="hover">
               <span class="el-dropdown-link">
-                <el-avatar :size="32" :src="userStore.userInfo?.avatar" />
+                <el-avatar :size="36" :src="userStore.userInfo?.avatar || defaultAvatar" />
                 <span class="username">{{ userStore.userInfo?.realName || userStore.userInfo?.username }}</span>
                 <el-icon class="el-icon--right"><arrow-down /></el-icon>
               </span>
@@ -42,6 +43,8 @@
               </template>
             </el-dropdown>
           </template>
+          
+          <!-- 未登录状态：显示登录和注册按钮 -->
           <template v-else>
             <el-button type="primary" plain @click="showLoginDialog = true">登录</el-button>
             <el-button type="warning" @click="router.push('/register')">注册</el-button>
@@ -116,6 +119,8 @@ import { ElMessage } from 'element-plus'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
 const activeMenu = computed(() => {
   const path = route.path
@@ -233,6 +238,7 @@ onMounted(() => {
 .user-info {
   display: flex;
   align-items: center;
+  gap: 15px;
 }
 
 .el-dropdown-link {
@@ -240,10 +246,18 @@ onMounted(() => {
   align-items: center;
   color: #fff;
   cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.el-dropdown-link:hover {
+  background: rgba(255,255,255,0.1);
 }
 
 .username {
   margin: 0 8px;
+  font-size: 14px;
 }
 
 .main {

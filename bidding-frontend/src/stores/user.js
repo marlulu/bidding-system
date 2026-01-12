@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { login as loginApi, getUserInfo as getUserInfoApi } from '@/api/auth'
 import { setToken, removeToken } from '@/utils/auth'
 
@@ -35,9 +35,12 @@ export const useUserStore = defineStore('user', () => {
     return userInfo.value && userInfo.value.role === 'SUPPLIER'
   }
 
+  const isLoggedIn = computed(() => !!token.value || !!localStorage.getItem('token'))
+
   return {
     userInfo,
     token,
+    isLoggedIn,
     login,
     getUserInfo,
     logout,
