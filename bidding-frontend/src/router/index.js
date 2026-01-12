@@ -3,11 +3,6 @@ import { getToken } from '@/utils/auth'
 
 const routes = [
   {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/Login.vue')
-  },
-  {
     path: '/',
     component: () => import('@/components/Layout/index.vue'),
     redirect: '/dashboard',
@@ -89,31 +84,29 @@ router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} - 内部招标采购门户`
   }
 
-  // 1. 如果是登录页
-  if (to.path === '/login') {
-    if (token) {
-      next('/')
-    } else {
-      next()
-    }
-    return
-  }
-
-  // 2. 检查路由元信息中的 requiresAuth
+  // 1. 检查路由元信息中的 requiresAuth
   // 显式判断 false，确保首页和列表页绝对放行
   if (to.meta.requiresAuth === false) {
     next()
     return
   }
 
-  // 3. 如果需要登录但没有 token
+  // 2. 如果需要登录但没有 token
   if (to.meta.requiresAuth && !token) {
-    next({
-      path: '/login',
-      query: { redirect: to.fullPath }
-    })
+    // 不再跳转到 /login 页面，而是留在当前页并触发登录弹窗
+    // 我们通过 query 参数通知 Layout 组件弹出登录框
+    if (to.path !== '/dashboard') {
+      next({
+        path: '/dashboard',
+        query: { login: 'true', redirect: to.fullPath }
+      })
+    } else {
+      next({
+        path: '/dashboard',
+        query: { login: 'true' }
+      })
+    }
   } else {
-    // 4. 其他情况（如未定义 meta 或已登录）
     next()
   }
 })
