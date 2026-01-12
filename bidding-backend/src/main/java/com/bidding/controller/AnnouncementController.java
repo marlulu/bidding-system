@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/announcements")
+@RequestMapping("/announcements") // 移除 /api，因为 context-path 已配置为 /api
 public class AnnouncementController {
 
     @Autowired
