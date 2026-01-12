@@ -114,7 +114,7 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: bidding_system
     ports:
-      - "3306:3306" # 可选：如果需要从外部访问MySQL，请保留
+      - "3307:3306" # 可选：如果需要从外部访问MySQL，请保留
     volumes:
       - db_data:/var/lib/mysql
       - ./database.sql:/docker-entrypoint-initdb.d/database.sql # 启动时自动导入SQL
@@ -126,7 +126,7 @@ services:
     container_name: bidding-backend
     restart: always
     ports:
-      - "8081:8081" # 后端服务端口
+      - "8083:8083" # 后端服务端口
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/bidding_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
@@ -141,7 +141,7 @@ services:
     container_name: bidding-frontend
     restart: always
     ports:
-      - "80:80" # 前端通过 80 端口访问
+      - "8082:80" # 前端通过 8082 端口访问
     depends_on:
       - backend
 
@@ -169,7 +169,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://backend:8081/api/; # 转发到后端服务
+        proxy_pass http://backend:8083/api/; # 转发到后端服务
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -237,7 +237,7 @@ sudo docker compose ps
 
 ### 6.2 访问前端应用
 
-在浏览器中访问您的云服务器 IP 地址（例如 `http://您的云服务器IP`）。您应该能看到招投标系统的登录页面。
+在浏览器中访问您的云服务器 IP 地址和前端端口（例如 `http://您的云服务器IP:8082`）。您应该能看到招投标系统的登录页面。
 
 ### 6.3 检查后端 API
 
@@ -258,7 +258,7 @@ sudo docker compose logs -f db
 ### 7.1 容器无法启动
 
 *   **检查日志**：使用 `sudo docker compose logs <service_name>` 查看具体服务的启动日志，通常能找到错误原因。
-*   **端口冲突**：确保宿主机上没有其他服务占用了 80、8081、3306 端口。如果存在冲突，请修改 `docker-compose.yml` 中的 `ports` 映射。
+*   **端口冲突**：确保宿主机上没有其他服务占用了 8082、8083、3307 端口。如果存在冲突，请修改 `docker-compose.yml` 中的 `ports` 映射。
 
 ### 7.2 前端页面空白或加载失败
 
@@ -280,7 +280,7 @@ sudo docker compose logs -f db
 
 ### 7.5 防火墙问题
 
-*   **云服务器防火墙/安全组**：确保您的云服务商控制台中，已开放 80 端口（用于 HTTP 访问）和 3306 端口（如果需要从外部连接 MySQL）。
+*   **云服务器防火墙/安全组**：确保您的云服务商控制台中，已开放 8082 端口（用于 HTTP 访问）和 3307 端口（如果需要从外部连接 MySQL）。
 
 ## 8. 总结
 
