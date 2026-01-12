@@ -24,13 +24,15 @@ public class WebConfig implements WebMvcConfigurer {
         return new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                // 放行 OPTIONS 请求
-                if ("OPTIONS".equals(request.getMethod())) {
+                // 核心修复：最优先处理 OPTIONS 请求，直接放行
+                if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                    response.setStatus(HttpServletResponse.SC_OK);
                     return true;
                 }
                 
                 String token = request.getHeader(Constants.JWT_HEADER);
-                log.info("拦截器接收到请求: {}, Token: {}", request.getRequestURI(), token != null ? "已携带" : "未携带");
+                log.info("拦截器接收到请求: {}, Method: {}, Token: {}", 
+                        request.getRequestURI(), request.getMethod(), token != null ? "已携带" : "未携带");
 
                 if (token != null && token.startsWith(Constants.JWT_PREFIX)) {
                     token = token.substring(Constants.JWT_PREFIX.length());
@@ -53,7 +55,7 @@ public class WebConfig implements WebMvcConfigurer {
                 }
                 
                 log.warn("Token 验证失败或未携带 Token, 路径: {}", request.getRequestURI());
-                response.setStatus(401);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"code\":401,\"message\":\"未授权，请先登录\"}");
                 return false;
