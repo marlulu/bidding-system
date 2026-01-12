@@ -43,73 +43,57 @@
       </el-form>
     </el-card>
 
-    <!-- 列表展示 -->
+    <!-- 列表展示 - 统一卡片模式 -->
     <div v-loading="loading">
-      <!-- 管理员视图 - 表格形式 -->
-      <div v-if="userStore.isAdmin()" class="admin-view">
-        <el-table :data="tableData" stripe style="width: 100%; margin-bottom: 20px">
-          <el-table-column prop="announcementNo" label="公告编号" width="150" />
-          <el-table-column prop="title" label="标题" min-width="200" />
-          <el-table-column prop="type" label="类型" width="100">
-            <template #default="{ row }">
-              <el-tag :type="getTypeTag(row.type)" size="small">{{ formatType(row.type) }}</el-tag>
+      <el-row :gutter="20">
+        <el-col :xs="24" :sm="12" :md="8" v-for="item in tableData" :key="item.id">
+          <el-card class="card-item announcement-card" shadow="hover">
+            <!-- 管理员操作菜单 -->
+            <template v-if="userStore.isAdmin()" #header>
+              <div class="card-header">
+                <span class="card-title">{{ item.title }}</span>
+                <el-dropdown trigger="click" @command="handleCommand($event, item.id)">
+                  <el-button type="primary" link size="small"><el-icon><MoreFilled /></el-icon></el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="edit">编辑</el-dropdown-item>
+                      <el-dropdown-item v-if="item.status === 'DRAFT'" command="publish">发布</el-dropdown-item>
+                      <el-dropdown-item v-if="item.status === 'PUBLISHED'" command="close">关闭</el-dropdown-item>
+                      <el-dropdown-item command="delete">删除</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
             </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="100">
-            <template #default="{ row }">
-              <el-tag v-if="row.status === 'DRAFT'" type="info">草稿</el-tag>
-              <el-tag v-else-if="row.status === 'PUBLISHED'" type="success">已发布</el-tag>
-              <el-tag v-else-if="row.status === 'CLOSED'" type="danger">已关闭</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="publishTime" label="发布时间" width="180" />
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
-              <el-button 
-                v-if="row.status === 'DRAFT'" 
-                type="success" 
-                link 
-                size="small" 
-                @click="handlePublish(row.id)"
-              >
-                发布
-              </el-button>
-              <el-button 
-                v-if="row.status === 'PUBLISHED'" 
-                type="warning" 
-                link 
-                size="small" 
-                @click="handleClose(row.id)"
-              >
-                关闭
-              </el-button>
-              <el-button type="danger" link size="small" @click="handleDelete(row.id)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
 
-      <!-- 普通用户视图 - 卡片形式 -->
-      <div v-else class="user-view">
-        <el-row :gutter="20">
-          <el-col :xs="24" :sm="12" :md="8" v-for="item in tableData" :key="item.id">
-            <el-card class="card-item announcement-card" shadow="hover">
-              <div class="card-tag" v-if="item.isTop">置顶</div>
-              <h3 class="title" @click="handleDetail(item.id)">{{ item.title }}</h3>
-              <div class="info">
-                <p><el-icon><Location /></el-icon> 地区：{{ item.region || '全国' }}</p>
-                <p><el-icon><Money /></el-icon> 预算：<span class="price">￥{{ formatMoney(item.projectBudget) }}</span></p>
-                <p><el-icon><Calendar /></el-icon> 截止：{{ formatDate(item.bidDeadline) }}</p>
-              </div>
-              <div class="card-footer">
-                <el-tag :type="getTypeTag(item.type)" size="small">{{ formatType(item.type) }}</el-tag>
-                <el-button type="primary" link @click="handleDetail(item.id)">查看详情</el-button>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-      </div>
+            <!-- 非管理员模式下的标题 -->
+            <div v-else class="card-tag" v-if="item.isTop">置顶</div>
+            <h3 v-if="!userStore.isAdmin()" class="title" @click="handleDetail(item.id)">{{ item.title }}</h3>
+
+            <!-- 公告类型标签 -->
+            <div class="type-badge">
+              <el-tag :type="getTypeTag(item.type)" size="small">{{ formatType(item.type) }}</el-tag>
+              <el-tag v-if="userStore.isAdmin()" :type="getStatusTag(item.status)" size="small" style="margin-left: 5px">
+                {{ formatStatus(item.status) }}
+              </el-tag>
+            </div>
+
+            <!-- 公告信息 -->
+            <div class="info">
+              <p><el-icon><Location /></el-icon> 地区：{{ item.region || '全国' }}</p>
+              <p><el-icon><Money /></el-icon> 预算：<span class="price">￥{{ formatMoney(item.projectBudget) }}</span></p>
+              <p><el-icon><Calendar /></el-icon> 截止：{{ formatDate(item.bidDeadline) }}</p>
+            </div>
+
+            <!-- 底部操作 -->
+            <div class="card-footer">
+              <el-button type="primary" link @click="handleDetail(item.id)">
+                {{ userStore.isAdmin() ? '查看详情' : '立即投标' }}
+              </el-button>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
 
       <el-empty v-if="tableData.length === 0" description="暂无相关招标信息" />
 
@@ -130,7 +114,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Location, Money, Calendar, Edit, Delete } from '@element-plus/icons-vue'
+import { Search, Location, Money, Calendar, MoreFilled } from '@element-plus/icons-vue'
 import { getAnnouncementList, deleteAnnouncement, publishAnnouncement } from '@/api/announcement'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -153,7 +137,7 @@ const searchForm = reactive({
 
 const pagination = reactive({
   page: 1,
-  size: userStore.isAdmin() ? 10 : 9,
+  size: 9,
   total: 0
 })
 
@@ -183,8 +167,21 @@ const handleDetail = (id) => {
   router.push(`/announcements/detail/${id}`)
 }
 
-const handleEdit = (id) => {
-  router.push(`/announcements/edit/${id}`)
+const handleCommand = async (command, id) => {
+  switch (command) {
+    case 'edit':
+      router.push(`/announcements/edit/${id}`)
+      break
+    case 'publish':
+      await handlePublish(id)
+      break
+    case 'close':
+      await handleClose(id)
+      break
+    case 'delete':
+      await handleDelete(id)
+      break
+  }
 }
 
 const handlePublish = async (id) => {
@@ -211,7 +208,6 @@ const handleClose = async (id) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    // 这里可以调用关闭公告的 API，暂时使用更新状态的方式
     ElMessage.success('关闭成功')
     loadData()
   } catch (error) {
@@ -253,9 +249,19 @@ const formatType = (type) => {
   return map[type] || type
 }
 
+const formatStatus = (status) => {
+  const map = { DRAFT: '草稿', PUBLISHED: '已发布', CLOSED: '已关闭' }
+  return map[status] || status
+}
+
 const getTypeTag = (type) => {
   const map = { BID: '', CHANGE: 'warning', TERMINATE: 'danger', RESULT: 'success' }
   return map[type] || ''
+}
+
+const getStatusTag = (status) => {
+  const map = { DRAFT: 'info', PUBLISHED: 'success', CLOSED: 'danger' }
+  return map[status] || 'info'
 }
 
 onMounted(() => {
@@ -265,7 +271,7 @@ onMounted(() => {
 
 <style scoped>
 .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -276,38 +282,53 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-.admin-view {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.user-view {
-  margin-top: 20px;
-}
-
 .announcement-card {
   position: relative;
-  height: 220px;
+  height: 280px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
   margin-bottom: 20px;
+  transition: all 0.3s;
+}
+
+.announcement-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.card-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
 }
 
 .card-tag {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 10px;
+  right: 10px;
   background-color: #FF6600;
   color: #fff;
   padding: 2px 10px;
   font-size: 12px;
-  border-bottom-left-radius: 8px;
+  border-radius: 4px;
   z-index: 1;
 }
 
-.announcement-card .title {
+.title {
   font-size: 18px;
   color: #333;
   margin-bottom: 15px;
@@ -321,11 +342,20 @@ onMounted(() => {
   transition: color 0.3s;
 }
 
-.announcement-card .title:hover {
+.title:hover {
   color: #003366;
 }
 
-.announcement-card .info p {
+.type-badge {
+  margin-bottom: 15px;
+}
+
+.info {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.info p {
   font-size: 14px;
   color: #666;
   margin-bottom: 8px;
@@ -333,7 +363,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.announcement-card .info .el-icon {
+.info .el-icon {
   margin-right: 8px;
   color: #003366;
 }
@@ -346,8 +376,7 @@ onMounted(() => {
 .card-footer {
   margin-top: auto;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
 }
 
 .pagination {

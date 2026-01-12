@@ -54,69 +54,84 @@
       </el-form>
     </el-card>
 
-    <!-- 供应商列表 - 管理员表格视图 -->
-    <div v-if="userStore.isAdmin()" v-loading="loading" class="admin-view">
-      <el-table :data="tableData" stripe style="width: 100%; margin-bottom: 20px">
-        <el-table-column prop="companyName" label="公司名称" min-width="200" />
-        <el-table-column prop="companyCode" label="统一社会信用代码" width="180" />
-        <el-table-column prop="industry" label="行业" width="100" />
-        <el-table-column prop="scale" label="企业规模" width="100">
-          <template #default="{ row }">
-            {{ formatScale(row.scale) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="认证状态" width="100">
-          <template #default="{ row }">
-            <el-tag v-if="row.status === 0" type="info">待审核</el-tag>
-            <el-tag v-else-if="row.status === 1" type="success">已认证</el-tag>
-            <el-tag v-else-if="row.status === 2" type="danger">已驳回</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="contactName" label="联系人" width="100" />
-        <el-table-column prop="contactPhone" label="联系电话" width="130" />
-        <el-table-column label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="handleEdit(row.id)">编辑</el-button>
-            <el-button type="warning" link size="small" @click="handleAudit(row.id)">审核</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(row.id)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-
-    <!-- 供应商列表 - 普通用户卡片视图 -->
-    <div v-else v-loading="loading" class="user-view">
+    <!-- 列表展示 - 统一卡片模式 -->
+    <div v-loading="loading">
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :md="6" v-for="item in tableData" :key="item.id">
-          <el-card class="card-item supplier-card" shadow="hover" @click="handleDetail(item.id)">
-            <div class="supplier-logo">
-              <el-icon :size="40" color="#003366"><OfficeBuilding /></el-icon>
+          <el-card class="card-item supplier-card" shadow="hover">
+            <!-- 管理员操作菜单 -->
+            <template v-if="userStore.isAdmin()" #header>
+              <div class="card-header">
+                <span class="card-title">{{ item.companyName }}</span>
+                <el-dropdown trigger="click" @command="handleCommand($event, item.id)">
+                  <el-button type="primary" link size="small"><el-icon><MoreFilled /></el-icon></el-button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="edit">编辑</el-dropdown-item>
+                      <el-dropdown-item command="audit">审核</el-dropdown-item>
+                      <el-dropdown-item command="delete">删除</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+            </template>
+
+            <!-- 非管理员模式下的内容 -->
+            <div v-if="!userStore.isAdmin()">
+              <div class="supplier-logo">
+                <el-icon :size="40" color="#003366"><OfficeBuilding /></el-icon>
+              </div>
+              <h3 class="name">{{ item.companyName }}</h3>
             </div>
-            <h3 class="name">{{ item.companyName }}</h3>
+
+            <!-- 公共信息 -->
             <p class="industry">{{ item.industry }}</p>
             <div class="tags">
               <el-tag size="small" type="info">{{ formatScale(item.scale) }}</el-tag>
-              <el-tag size="small" type="success" style="margin-left: 5px">{{ item.qualificationLevel || '认证供应商' }}</el-tag>
+              <el-tag v-if="!userStore.isAdmin()" size="small" type="success" style="margin-left: 5px">
+                {{ item.qualificationLevel || '认证供应商' }}
+              </el-tag>
+              <el-tag v-else :type="getStatusTag(item.status)" size="small" style="margin-left: 5px">
+                {{ formatStatus(item.status) }}
+              </el-tag>
             </div>
+
+            <!-- 底部操作 -->
             <div class="card-footer">
-              <el-button type="primary" plain size="small" @click.stop="handleContact(item)">联系供应商</el-button>
+              <el-button 
+                v-if="!userStore.isAdmin()" 
+                type="primary" 
+                plain 
+                size="small" 
+                @click="handleContact(item)"
+              >
+                联系供应商
+              </el-button>
+              <el-button 
+                type="primary" 
+                link 
+                size="small" 
+                @click="handleDetail(item.id)"
+              >
+                {{ userStore.isAdmin() ? '查看详情' : '详情' }}
+              </el-button>
             </div>
           </el-card>
         </el-col>
       </el-row>
-    </div>
 
-    <el-empty v-if="tableData.length === 0" description="暂无相关供应商信息" />
+      <el-empty v-if="tableData.length === 0" description="暂无相关供应商信息" />
 
-    <!-- 分页 -->
-    <div class="pagination">
-      <el-pagination
-        v-model:current-page="pagination.page"
-        v-model:page-size="pagination.size"
-        :total="pagination.total"
-        layout="total, prev, pager, next, jumper"
-        @current-change="loadData"
-      />
+      <!-- 分页 -->
+      <div class="pagination">
+        <el-pagination
+          v-model:current-page="pagination.page"
+          v-model:page-size="pagination.size"
+          :total="pagination.total"
+          layout="total, prev, pager, next, jumper"
+          @current-change="loadData"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -124,7 +139,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Search, OfficeBuilding } from '@element-plus/icons-vue'
+import { Search, OfficeBuilding, MoreFilled } from '@element-plus/icons-vue'
 import { getSupplierList, deleteSupplier } from '@/api/supplier'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -147,7 +162,7 @@ const searchForm = reactive({
 
 const pagination = reactive({
   page: 1,
-  size: userStore.isAdmin() ? 10 : 12,
+  size: 12,
   total: 0
 })
 
@@ -186,12 +201,18 @@ const handleDetail = (id) => {
   router.push(`/suppliers/detail/${id}`)
 }
 
-const handleEdit = (id) => {
-  router.push(`/suppliers/edit/${id}`)
-}
-
-const handleAudit = (id) => {
-  router.push(`/suppliers/audit/${id}`)
+const handleCommand = async (command, id) => {
+  switch (command) {
+    case 'edit':
+      router.push(`/suppliers/edit/${id}`)
+      break
+    case 'audit':
+      router.push(`/suppliers/audit/${id}`)
+      break
+    case 'delete':
+      await handleDelete(id)
+      break
+  }
 }
 
 const handleDelete = async (id) => {
@@ -220,6 +241,16 @@ const formatScale = (scale) => {
   return map[scale] || scale
 }
 
+const formatStatus = (status) => {
+  const map = { 0: '待审核', 1: '已认证', 2: '已驳回' }
+  return map[status] || '未知'
+}
+
+const getStatusTag = (status) => {
+  const map = { 0: 'info', 1: 'success', 2: 'danger' }
+  return map[status] || 'info'
+}
+
 onMounted(() => {
   loadData()
 })
@@ -227,7 +258,7 @@ onMounted(() => {
 
 <style scoped>
 .container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -235,6 +266,7 @@ onMounted(() => {
 .filter-card {
   margin-bottom: 30px;
   background-color: #fff;
+  border-radius: 8px;
 }
 
 .filter-section {
@@ -260,25 +292,38 @@ onMounted(() => {
   transition: all 0.3s;
 }
 
-.admin-view {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.user-view {
-  margin-top: 20px;
-}
-
 .supplier-card {
-  text-align: center;
-  padding: 20px 10px;
-  cursor: pointer;
-  margin-bottom: 20px;
+  position: relative;
   height: 280px;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+}
+
+.supplier-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.card-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
 }
 
 .supplier-logo {
@@ -292,7 +337,7 @@ onMounted(() => {
   margin: 0 auto 15px;
 }
 
-.supplier-card .name {
+.name {
   font-size: 18px;
   color: #333;
   margin-bottom: 10px;
@@ -301,20 +346,26 @@ onMounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  text-align: center;
 }
 
-.supplier-card .industry {
+.industry {
   font-size: 14px;
   color: #999;
   margin-bottom: 10px;
+  text-align: center;
 }
 
-.supplier-card .tags {
+.tags {
   margin-bottom: 15px;
+  text-align: center;
 }
 
 .card-footer {
   margin-top: auto;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .pagination {
