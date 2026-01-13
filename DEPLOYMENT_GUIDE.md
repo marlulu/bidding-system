@@ -100,11 +100,9 @@ spring:
 
 ### 4.2 `docker-compose.yml` 配置
 
-项目根目录下的 `docker-compose.yml` 文件定义了所有服务的编排：
+项目根目录下的 `docker-compose.yml` 文件定义了所有服务的编排。**请确保您上传到服务器的 `docker-compose.yml` 内容如下，它直接引用本地镜像，不进行任何 `build` 操作：**
 
 ```yaml
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
@@ -114,19 +112,17 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: bidding_system
     ports:
-      - "3307:3306" # 可选：如果需要从外部访问MySQL，请保留
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./database.sql:/docker-entrypoint-initdb.d/database.sql # 启动时自动导入SQL
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
 
   backend:
-    build:
-      context: ./bidding-backend
-      dockerfile: Dockerfile
+    image: bidding-backend:latest
     container_name: bidding-backend
     restart: always
     ports:
-      - "8083:8083" # 后端服务端口
+      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/bidding_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
       SPRING_DATASOURCE_USERNAME: root
@@ -135,18 +131,16 @@ services:
       - db
 
   frontend:
-    build:
-      context: ./bidding-frontend
-      dockerfile: Dockerfile
+    image: bidding-frontend:latest
     container_name: bidding-frontend
     restart: always
     ports:
-      - "8082:80" # 前端通过 8082 端口访问
+      - "8082:80"
     depends_on:
       - backend
 
 volumes:
-  db_data: # 用于MySQL数据持久化
+  db_data:
 ```
 
 **重要说明**：
@@ -187,31 +181,80 @@ server {
 
 完成环境准备和项目配置后，您可以按照以下步骤进行部署：
 
-### 5.1 克隆项目代码
+### 5.1 本地准备文件
 
-登录到您的云服务器，并克隆项目代码到 `/opt` 目录：
+在您的**本地开发电脑**上，请按照以下步骤准备所有需要上传到服务器的文件：
+
+#### 1. 编译并构建 Docker 镜像
 
 ```bash
-# 如果 /opt/bidding-system 目录已存在，请先删除
-sudo rm -rf /opt/bidding-system
+# 1. 编译后端并构建镜像
+cd bidding-backend
+mvn clean package -DskipTests
+docker build -t bidding-backend:latest .
 
-# 克隆项目
-sudo git clone https://github.com/marlulu/bidding-system.git /opt/bidding-system
+# 2. 编译前端并构建镜像
+cd ../bidding-frontend
+npm install && npm run build
+docker build -t bidding-frontend:latest .
 
-# 进入项目目录
-cd /opt/bidding-system
+# 3. 拉取 MySQL 镜像 (如果本地没有)
+docker pull mysql:8.0
 ```
 
-### 5.2 启动 Docker Compose 服务
+#### 2. 导出 Docker 镜像为 `.tar` 文件
 
-在 `/opt/bidding-system` 目录下，执行以下命令启动所有服务：
+在项目根目录下执行以下命令，将构建好的镜像导出为 `.tar` 文件：
 
 ```bash
-sudo docker compose up -d --build
+# 在项目根目录下执行
+docker save -o bidding-backend.tar bidding-backend:latest
+docker save -o bidding-frontend.tar bidding-frontend:latest
+docker save -o mysql8.tar mysql:8.0
+```
+
+#### 3. 收集其他必要文件
+
+除了上述 `.tar` 镜像文件，您还需要准备以下文件：
+*   `docker-compose.yml` (请确保是本指南中提供的离线版配置)
+*   `database.sql` (位于项目根目录)
+
+### 5.2 上传文件到服务器
+
+将上述所有文件（`bidding-backend.tar`, `bidding-frontend.tar`, `mysql8.tar`, `docker-compose.yml`, `database.sql`）通过 `scp` 或图形化工具（如 WinSCP, FinalShell）上传到服务器的 `/home/bidding-system` 目录。如果该目录不存在，请先创建：
+
+```bash
+sudo mkdir -p /home/bidding-system
+```
+
+### 5.2 上传文件
+
+将以下文件通过 `scp` 或工具（如 WinSCP/FinalShell）上传到服务器的 `/home/bidding-system` 目录：
+*   `bidding-backend.tar`
+*   `bidding-frontend.tar`
+*   `mysql8.tar`
+*   `docker-compose.yml`
+*   `database.sql`
+
+### 5.3 加载镜像
+
+在 `/home/bidding-system` 目录下，执行以下命令加载镜像：
+
+```bash
+sudo docker load -i mysql8.tar
+sudo docker load -i bidding-backend.tar
+sudo docker load -i bidding-frontend.tar
+```
+
+### 5.4 启动 Docker Compose 服务
+
+在 `/home/bidding-system` 目录下，执行以下命令启动所有服务：
+
+```bash
+sudo docker compose up -d
 ```
 
 *   `-d`：表示在后台运行容器。
-*   `--build`：表示在启动前重新构建镜像（首次部署或修改 Dockerfile 后需要）。
 
 ### 5.3 停止和删除服务
 
