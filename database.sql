@@ -3,6 +3,8 @@
  包含清晰的初始测试账号及完整的业务字段。
 */
 
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS `bidding_system` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `bidding_system`;
 
