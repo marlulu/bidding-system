@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
@@ -12,12 +10,10 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./database.sql:/docker-entrypoint-initdb.d/database.sql # 启动时自动导入SQL
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
 
   backend:
-    build:
-      context: ./bidding-backend
-      dockerfile: Dockerfile
+    image: bidding-backend:latest
     container_name: bidding-backend
     restart: always
     ports:
@@ -30,9 +26,7 @@ services:
       - db
 
   frontend:
-    build:
-      context: ./bidding-frontend
-      dockerfile: Dockerfile
+    image: bidding-frontend:latest
     container_name: bidding-frontend
     restart: always
     ports:
