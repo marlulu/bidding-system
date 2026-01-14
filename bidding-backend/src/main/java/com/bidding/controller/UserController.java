@@ -43,7 +43,9 @@ public class UserController {
      */
     @GetMapping("/{id}")
     public Result<User> getUserById(@PathVariable Long id) {
-        User user = userService.getById(id);
+        UserVO userVO = userService.getUserInfo(id);
+        User user = new User();
+        org.springframework.beans.BeanUtils.copyProperties(userVO, user);
         return Result.success(user);
     }
 

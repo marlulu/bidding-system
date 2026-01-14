@@ -64,7 +64,7 @@ public class UserService {
 
         log.info("登录成功: {} (ID: {})", request.getUsername(), user.getId());
         // 生成Token
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole(), user.getSupplierId());
 
         // 构建返回数据
         UserVO userVO = convertToVO(user);

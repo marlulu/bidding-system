@@ -40,9 +40,16 @@ public class WebConfig implements WebMvcConfigurer {
                     try {
                         if (jwtUtil.validateToken(token)) {
                             Long userId = jwtUtil.getUserIdFromToken(token);
-                            log.info("拦截器成功解析 Token, userId: {}", userId);
+                            String role = jwtUtil.getRoleFromToken(token);
+                            log.info("拦截器成功解析 Token, userId: {}, role: {}", userId, role);
                             // 存入 request 属性，供参数解析器使用
                             request.setAttribute("userId", userId);
+                            request.setAttribute("role", role);
+                            // 如果是供应商，则从 token 中获取 supplierId
+                            if ("SUPPLIER".equals(role)) {
+                                Long supplierId = jwtUtil.getSupplierIdFromToken(token);
+                                request.setAttribute("supplierId", supplierId);
+                            }
                             return true;
                         }
                     } catch (Exception e) {

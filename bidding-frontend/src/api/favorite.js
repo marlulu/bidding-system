@@ -16,16 +16,17 @@ export function addFavorite(data) {
   })
 }
 
-export function removeFavorite(id) {
+export function removeFavorite(targetId, targetType) {
   return request({
-    url: `/favorites/${id}`,
-    method: 'delete'
+    url: '/favorites',
+    method: 'delete',
+    params: { targetId, targetType }
   })
 }
 
 export function checkFavoriteStatus(targetId, targetType) {
   return request({
-    url: `/favorites/status`,
+    url: `/favorites/check`,
     method: 'get',
     params: { targetId, targetType }
   })

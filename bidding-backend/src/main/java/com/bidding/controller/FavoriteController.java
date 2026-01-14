@@ -4,6 +4,7 @@ import com.bidding.common.Result;
 import com.bidding.entity.Favorite;
 import com.bidding.service.FavoriteService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,10 @@ public class FavoriteController {
      */
     @PostMapping
     public Result<String> addFavorite(@RequestBody Favorite favorite) {
-        // TODO: userId 应该从当前登录用户中获取
-        Long userId = 1L; // 示例：假设当前用户ID为1
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("用户未登录");
+        }
         favoriteService.addFavorite(userId, favorite.getTargetId(), favorite.getTargetType());
         return Result.success("收藏成功");
     }
@@ -37,8 +40,10 @@ public class FavoriteController {
     public Result<String> removeFavorite(
             @RequestParam Long targetId,
             @RequestParam String targetType) {
-        // TODO: userId 应该从当前登录用户中获取
-        Long userId = 1L; // 示例：假设当前用户ID为1
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("用户未登录");
+        }
         favoriteService.removeFavorite(userId, targetId, targetType);
         return Result.success("取消收藏成功");
     }
@@ -55,8 +60,10 @@ public class FavoriteController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String targetType) {
-        // TODO: userId 应该从当前登录用户中获取
-        Long userId = 1L; // 示例：假设当前用户ID为1
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("用户未登录");
+        }
         Page<Favorite> favorites = favoriteService.getFavoritesByUserId(userId, pageNum, pageSize, targetType);
         return Result.success(favorites);
     }
@@ -71,8 +78,10 @@ public class FavoriteController {
     public Result<Boolean> checkFavorite(
             @RequestParam Long targetId,
             @RequestParam String targetType) {
-        // TODO: userId 应该从当前登录用户中获取
-        Long userId = 1L; // 示例：假设当前用户ID为1
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            throw new RuntimeException("用户未登录");
+        }
         boolean isFavorited = favoriteService.isFavorited(userId, targetId, targetType);
         return Result.success(isFavorited);
     }
