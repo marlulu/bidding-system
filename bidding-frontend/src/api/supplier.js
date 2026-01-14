@@ -78,9 +78,7 @@ export function registerSupplier(data) {
 
 export function uploadFile(data) {
   return request({
-    url: 
-'/files/upload
-',
+    url: '/files/upload',
     method: 'post',
     data,
     headers: {
