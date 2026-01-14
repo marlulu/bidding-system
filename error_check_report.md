@@ -25,7 +25,7 @@
     *   **已修复**：在 `UserService.java` 的 `login` 方法中，已修改 `jwtUtil.generateToken` 的调用，传入 `user.getSupplierId()`。
 
 2.  **完成 `javax` 到 `jakarta` 包的迁移**：
-    *   **已修复**：在 `JwtUtil.java` 中，已将 `import javax.crypto.SecretKey;` 修改为 `import jakarta.crypto.SecretKey;`。
+    *   **已修复**：在 `JwtUtil.java` 中，已将 `import jakarta.crypto.SecretKey;` 修改回 `import javax.crypto.SecretKey;`，因为加密相关的类仍位于 `javax.crypto` 包下。
 
 3.  **修复 `FavoriteController.java` 中的 `userId` 硬编码问题**：
     *   **已修复**：在 `FavoriteController.java` 中，已将所有硬编码的 `userId = 1L` 替换为从 `HttpServletRequest` 中获取 `userId` 的逻辑，并在 `userId` 为空时抛出运行时异常。
