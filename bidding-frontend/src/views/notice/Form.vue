@@ -2,7 +2,7 @@
   <div class="page-container">
     <el-card>
       <template #header>
-        <span>新建系统通知</span>
+        <span>{{ isEdit ? '编辑系统通知' : '新建系统通知' }}</span>
       </template>
       
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
@@ -64,17 +64,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { createNotice } from '@/api/notice'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { getNoticeById, createNotice, updateNotice } from '@/api/notice'
 import { getAllSuppliers } from '@/api/supplier'
 import { ElMessage } from 'element-plus'
 
+const route = useRoute()
 const router = useRouter()
 
 const formRef = ref(null)
 const loading = ref(false)
 const suppliers = ref([])
+
+const isEdit = computed(() => !!route.params.id)
 
 const form = reactive({
   title: '',
@@ -98,6 +101,26 @@ const loadSuppliers = async () => {
   }
 }
 
+const loadData = async () => {
+  if (isEdit.value) {
+    try {
+      const data = await getNoticeById(route.params.id)
+      if (data.targetSupplierIds) {
+        try {
+          data.targetSupplierIds = JSON.parse(data.targetSupplierIds)
+        } catch (e) {
+          data.targetSupplierIds = []
+        }
+      } else {
+        data.targetSupplierIds = []
+      }
+      Object.assign(form, data)
+    } catch (error) {
+      console.error('加载数据失败', error)
+    }
+  }
+}
+
 const handleSubmit = async () => {
   try {
     await formRef.value.validate()
@@ -110,8 +133,13 @@ const handleSubmit = async () => {
       submitData.targetSupplierIds = null
     }
     
-    await createNotice(submitData)
-    ElMessage.success('创建成功')
+    if (isEdit.value) {
+      await updateNotice(route.params.id, submitData)
+      ElMessage.success('更新成功')
+    } else {
+      await createNotice(submitData)
+      ElMessage.success('创建成功')
+    }
     router.push('/notices')
   } catch (error) {
     console.error('提交失败', error)
@@ -124,8 +152,9 @@ const handleCancel = () => {
   router.back()
 }
 
-onMounted(() => {
-  loadSuppliers()
+onMounted(async () => {
+  await loadSuppliers()
+  await loadData()
 })
 </script>
 

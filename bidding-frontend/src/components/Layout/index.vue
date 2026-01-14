@@ -103,7 +103,7 @@
         </el-form-item>
         <div class="login-options">
           <el-checkbox v-model="loginForm.remember">记住登录</el-checkbox>
-          <el-link type="primary" :underline="false">忘记密码？</el-link>
+          <el-link type="primary" :underline="false" @click="userStore.loginDialogVisible = false; router.push('/reset-password')">忘记密码？</el-link>
         </div>
       </el-form>
       <template #footer>
@@ -170,7 +170,7 @@ const handleLogin = async () => {
 }
 
 const handleRegister = () => {
-  ElMessage.info('注册功能开发中...')
+  router.push('/register')
 }
 
 const handleCommand = (command) => {

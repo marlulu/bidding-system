@@ -69,10 +69,40 @@ const routes = [
         meta: { title: '政策法规详情', requiresAuth: true }
       },
       {
+        path: 'policies/create',
+        name: 'PolicyCreate',
+        component: () => import('@/views/policy/Form.vue'),
+        meta: { title: '发布政策法规', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'policies/edit/:id',
+        name: 'PolicyEdit',
+        component: () => import('@/views/policy/Form.vue'),
+        meta: { title: '编辑政策法规', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
         path: 'notices',
         name: 'NoticeList',
         component: () => import('@/views/notice/List.vue'),
         meta: { title: '系统通知', requiresAuth: true }
+      },
+      {
+        path: 'notices/detail/:id',
+        name: 'NoticeDetail',
+        component: () => import('@/views/notice/Detail.vue'),
+        meta: { title: '通知详情', requiresAuth: true }
+      },
+      {
+        path: 'notices/create',
+        name: 'NoticeCreate',
+        component: () => import('@/views/notice/Form.vue'),
+        meta: { title: '发布通知', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'notices/edit/:id',
+        name: 'NoticeEdit',
+        component: () => import('@/views/notice/Form.vue'),
+        meta: { title: '编辑通知', requiresAuth: true, role: 'ADMIN' }
       },
       {
         path: 'profile',
@@ -87,6 +117,18 @@ const routes = [
         meta: { title: '我的收藏', requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue'),
+    meta: { title: '用户注册', requiresAuth: false }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/ResetPassword.vue'),
+    meta: { title: '重置密码', requiresAuth: false }
   }
 ]
 

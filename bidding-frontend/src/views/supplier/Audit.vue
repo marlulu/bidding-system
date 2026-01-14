@@ -75,7 +75,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getSupplierList, updateSupplierStatus } from '@/api/supplier'
+import { getSupplierList, auditSupplier } from '@/api/supplier'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const loading = ref(false)
@@ -122,13 +122,17 @@ const viewDetail = (row) => {
 
 const handleAudit = (row, status) => {
   const action = status === 1 ? '通过' : '拒绝'
-  ElMessageBox.confirm(`确定要${action}该供应商的入驻申请吗？`, '审核确认', {
+  ElMessageBox.prompt('请输入审核意见', '审核确认', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
+    inputPlaceholder: status === 1 ? '准予入驻' : '资料不全，请重新提交',
     type: status === 1 ? 'success' : 'warning'
-  }).then(async () => {
+  }).then(async ({ value }) => {
     try {
-      await updateSupplierStatus(row.id, status)
+      await auditSupplier(row.id, {
+        status: status,
+        auditRemark: value || (status === 1 ? '准予入驻' : '审核未通过')
+      })
       ElMessage.success(`已${action}`)
       detailVisible.value = false
       loadData()

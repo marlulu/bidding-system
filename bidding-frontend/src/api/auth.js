@@ -14,3 +14,19 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function register(data) {
+  return request({
+    url: '/auth/register',
+    method: 'post',
+    data
+  })
+}
+
+export function resetPassword(data) {
+  return request({
+    url: '/auth/reset-password',
+    method: 'post',
+    data
+  })
+}

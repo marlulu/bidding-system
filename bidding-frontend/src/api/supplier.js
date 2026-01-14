@@ -59,3 +59,19 @@ export function updateSupplierStatus(id, status) {
     data: { status }
   })
 }
+
+export function auditSupplier(id, data) {
+  return request({
+    url: `/suppliers/${id}/audit`,
+    method: 'put',
+    data
+  })
+}
+
+export function registerSupplier(data) {
+  return request({
+    url: '/suppliers/register',
+    method: 'post',
+    data
+  })
+}
