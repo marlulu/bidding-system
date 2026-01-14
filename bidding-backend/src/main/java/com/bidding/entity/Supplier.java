@@ -21,7 +21,11 @@ public class Supplier {
     private String qualificationLevel;
     private String description;
     private String qualificationFiles;
-    private Integer status;
+        private Integer status; // 0-待审核, 1-审核通过, 2-审核不通过
+
+    private String auditRemark; // 审核意见
+
+    private Long auditorId; // 审核人ID
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)

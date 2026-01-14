@@ -72,7 +72,7 @@ public class SupplierService {
         if (supplierMapper.selectCount(wrapper) > 0) {
             throw new RuntimeException("统一社会信用代码已存在");
         }
-
+        supplier.setStatus(0); // 新创建的供应商默认为待审核状态
         supplierMapper.insert(supplier);
     }
 
@@ -105,6 +105,21 @@ public class SupplierService {
         Supplier supplier = new Supplier();
         supplier.setId(id);
         supplier.setStatus(status);
+        supplierMapper.updateById(supplier);
+    }
+
+    /**
+     * 审核供应商
+     */
+    @Transactional
+    public void auditSupplier(Long id, Integer status, String auditRemark, Long auditorId) {
+        Supplier supplier = supplierMapper.selectById(id);
+        if (supplier == null) {
+            throw new RuntimeException("供应商不存在");
+        }
+        supplier.setStatus(status);
+        supplier.setAuditRemark(auditRemark);
+        supplier.setAuditorId(auditorId);
         supplierMapper.updateById(supplier);
     }
 

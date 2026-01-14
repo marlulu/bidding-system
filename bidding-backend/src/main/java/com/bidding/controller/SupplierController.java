@@ -86,6 +86,19 @@ public class SupplierController {
     }
 
     /**
+     * 供应商注册
+     */
+    @PostMapping("/register")
+    public Result<Void> registerSupplier(@RequestBody Supplier supplier) {
+        try {
+            supplierService.createSupplier(supplier);
+            return Result.success("注册成功，请等待审核", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
      * 更新供应商
      */
     @PutMapping("/{id}")
@@ -123,6 +136,21 @@ public class SupplierController {
         try {
             supplierService.updateSupplierStatus(id, supplier.getStatus());
             return Result.success("状态更新成功", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 审核供应商
+     */
+    @PutMapping("/{id}/audit")
+    public Result<Void> auditSupplier(@PathVariable Long id, @RequestBody Supplier supplier, HttpServletRequest request) {
+        checkAdmin(request);
+        try {
+            Long auditorId = (Long) request.getAttribute("userId");
+            supplierService.auditSupplier(id, supplier.getStatus(), supplier.getAuditRemark(), auditorId);
+            return Result.success("审核成功", null);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }

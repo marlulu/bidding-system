@@ -51,7 +51,9 @@ CREATE TABLE `supplier` (
   `address` varchar(255) DEFAULT NULL,
   `description` text,
   `qualification_files` text,
-  `status` tinyint(1) NOT NULL DEFAULT 1,
+  `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '状态: 0待审核, 1审核通过, 2审核不通过',
+  `audit_remark` varchar(500) DEFAULT NULL COMMENT '审核意见',
+  `auditor_id` bigint(20) DEFAULT NULL COMMENT '审核人ID',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
