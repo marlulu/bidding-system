@@ -7,10 +7,19 @@ import com.bidding.service.PolicyService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.bidding.common.Constants;
 
 @RestController
 @RequestMapping("/policies")
 public class PolicyController {
+
+    private void checkAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("role");
+        if (!Constants.ROLE_ADMIN.equals(role)) {
+            throw new RuntimeException("无权操作");
+        }
+    }
+
 
     @Autowired
     private PolicyService policyService;
@@ -55,7 +64,8 @@ public class PolicyController {
      * 创建政策法规
      */
     @PostMapping
-    public Result<Void> createPolicy(@RequestBody Policy policy) {
+    public Result<Void> createPolicy(@RequestBody Policy policy, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             policyService.createPolicy(policy);
             return Result.success("创建成功", null);
@@ -68,7 +78,8 @@ public class PolicyController {
      * 更新政策法规
      */
     @PutMapping("/{id}")
-    public Result<Void> updatePolicy(@PathVariable Long id, @RequestBody Policy policy) {
+    public Result<Void> updatePolicy(@PathVariable Long id, @RequestBody Policy policy, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             policy.setId(id);
             policyService.updatePolicy(policy);
@@ -82,7 +93,8 @@ public class PolicyController {
      * 删除政策法规
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deletePolicy(@PathVariable Long id) {
+    public Result<Void> deletePolicy(@PathVariable Long id, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             policyService.deletePolicy(id);
             return Result.success("删除成功", null);
