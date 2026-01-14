@@ -63,7 +63,14 @@ public class AuthController {
      * 忘记密码/重置密码
      */
     @PostMapping("/reset-password")
-    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {}
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            userService.resetPassword(request);
+            return Result.success("密码重置成功", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
 
     /**
      * 修改密码
@@ -73,17 +80,6 @@ public class AuthController {
         try {
             userService.changePassword(userId, request);
             return Result.success("密码修改成功");
-        } catch (Exception e) {
-            return Result.error(e.getMessage());
-        }
-    }
-
-    /**
-     * 忘记密码/重置密码
-     */
-        try {
-            userService.resetPassword(request);
-            return Result.success("密码重置成功", null);
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
