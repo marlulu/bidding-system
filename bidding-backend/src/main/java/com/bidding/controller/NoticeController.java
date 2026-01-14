@@ -7,10 +7,19 @@ import com.bidding.service.NoticeService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.bidding.common.Constants;
 
 @RestController
 @RequestMapping("/notices")
 public class NoticeController {
+
+    private void checkAdmin(HttpServletRequest request) {
+        String role = (String) request.getAttribute("role");
+        if (!Constants.ROLE_ADMIN.equals(role)) {
+            throw new RuntimeException("无权操作");
+        }
+    }
+
 
     @Autowired
     private NoticeService noticeService;
@@ -57,7 +66,8 @@ public class NoticeController {
      * 创建系统通知
      */
     @PostMapping
-    public Result<Void> createNotice(@RequestBody Notice notice) {
+    public Result<Void> createNotice(@RequestBody Notice notice, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             noticeService.createNotice(notice);
             return Result.success("创建成功", null);
@@ -70,7 +80,8 @@ public class NoticeController {
      * 更新系统通知
      */
     @PutMapping("/{id}")
-    public Result<Void> updateNotice(@PathVariable Long id, @RequestBody Notice notice) {
+    public Result<Void> updateNotice(@PathVariable Long id, @RequestBody Notice notice, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             notice.setId(id);
             noticeService.updateNotice(notice);
@@ -84,7 +95,8 @@ public class NoticeController {
      * 删除系统通知
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteNotice(@PathVariable Long id) {
+    public Result<Void> deleteNotice(@PathVariable Long id, HttpServletRequest request) {
+        checkAdmin(request);
         try {
             noticeService.deleteNotice(id);
             return Result.success("删除成功", null);
