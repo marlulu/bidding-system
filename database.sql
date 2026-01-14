@@ -151,3 +151,32 @@ CREATE TABLE `sys_favorite` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏表';
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 7. 专家表 (sys_expert)
+DROP TABLE IF EXISTS `sys_expert`;
+CREATE TABLE `sys_expert` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL COMMENT '专家姓名',
+  `specialty` varchar(255) DEFAULT NULL COMMENT '专业领域',
+  `title` varchar(100) DEFAULT NULL COMMENT '职称',
+  `phone` varchar(20) DEFAULT NULL COMMENT '联系电话',
+  `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
+  `description` text COMMENT '专家简介',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否删除 0-否 1-是',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='专家表';
+
+-- 8. 专家抽取记录表 (sys_expert_extraction)
+DROP TABLE IF EXISTS `sys_expert_extraction`;
+CREATE TABLE `sys_expert_extraction` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `announcement_id` bigint(20) NOT NULL COMMENT '招标公告ID',
+  `expert_id` bigint(20) NOT NULL COMMENT '专家ID',
+  `extract_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '抽取时间',
+  `extractor_id` bigint(20) DEFAULT NULL COMMENT '抽取人ID',
+  `deleted` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否删除 0-否 1-是',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_announcement_expert` (`announcement_id`, `expert_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='专家抽取记录表';
