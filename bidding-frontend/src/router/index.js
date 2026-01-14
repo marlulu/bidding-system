@@ -127,6 +127,12 @@ const routes = [
         name: 'Favorites',
         component: () => import('@/views/user/Profile.vue'),
         meta: { title: '我的收藏', requiresAuth: true }
+      },
+      {
+        path: 'users',
+        name: 'UserList',
+        component: () => import('@/views/user/List.vue'),
+        meta: { title: '用户管理', requiresAuth: true, role: 'ADMIN' }
       }
     ]
   },

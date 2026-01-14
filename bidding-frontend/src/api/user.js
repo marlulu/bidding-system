@@ -33,8 +33,14 @@ export function deleteUser(id) {
 
 export function updateUserStatus(id, status) {
   return request({
-    url: `/users/${id}/status`,
-    method: 'put',
-    data: { status }
+    url: `/users/${id}/status?status=${status}`,
+    method: 'put'
+  })
+}
+
+export function updateUserRole(id, role) {
+  return request({
+    url: `/users/${id}/role?role=${role}`,
+    method: 'put'
   })
 }
