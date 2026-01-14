@@ -60,6 +60,8 @@
                       <el-dropdown-item v-if="item.status === 'DRAFT'" command="publish">发布</el-dropdown-item>
                       <el-dropdown-item v-if="item.status === 'PUBLISHED'" command="close">关闭</el-dropdown-item>
                       <el-dropdown-item command="delete">删除</el-dropdown-item>
+                      <el-dropdown-item v-if="!item.hasExtractedExperts" command="extractExperts">抽取专家</el-dropdown-item>
+                      <el-dropdown-item v-else command="viewExtractedExperts">查看专家</el-dropdown-item>
                     </el-dropdown-menu>
                   </template>
                 </el-dropdown>
@@ -108,6 +110,42 @@
         />
       </div>
     </div>
+
+    <!-- 专家抽取对话框 -->
+    <el-dialog
+      v-model="extractDialogVisible"
+      title="抽取专家"
+      width="30%"
+      center
+    >
+      <el-form label-width="100px">
+        <el-form-item label="抽取数量">
+          <el-input-number v-model="extractCount" :min="1" :max="10" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="extractDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitExtractExperts">确定抽取</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 查看已抽取专家对话框 -->
+    <el-dialog
+      v-model="viewExpertsDialogVisible"
+      title="已抽取专家列表"
+      width="50%"
+      center
+    >
+      <el-table :data="extractedExpertsList" border style="width: 100%">
+        <el-table-column prop="name" label="专家姓名" />
+        <el-table-column prop="specialty" label="专业领域" />
+        <el-table-column prop="title" label="职称" />
+        <el-table-column prop="phone" label="联系电话" />
+      </el-table>
+      <template #footer>
+        <el-button type="primary" @click="viewExpertsDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -116,6 +154,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Location, Money, Calendar, MoreFilled } from '@element-plus/icons-vue'
 import { getAnnouncementList, deleteAnnouncement, publishAnnouncement } from '@/api/announcement'
+import { extractExperts, getExtractedExperts, checkExtractionStatus } from '@/api/expert'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -123,6 +162,11 @@ const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
 const tableData = ref([])
+const extractDialogVisible = ref(false)
+const extractCount = ref(1)
+const currentAnnouncementId = ref(null)
+const extractedExpertsList = ref([])
+const viewExpertsDialogVisible = ref(false)
 
 const industries = ['信息技术', '建筑工程', '医疗器械', '办公用品', '咨询服务', '物流运输']
 const regions = ['北京', '上海', '广州', '深圳', '杭州', '成都', '武汉']
@@ -151,6 +195,10 @@ const loadData = async () => {
     })
     tableData.value = res.records
     pagination.total = res.total
+    // 检查每个公告的专家抽取状态
+    for (const item of tableData.value) {
+      item.hasExtractedExperts = await checkExtractionStatus(item.id).then(res => res.data)
+    }
   } catch (error) {
     console.error('加载列表失败', error)
   } finally {
@@ -180,6 +228,12 @@ const handleCommand = async (command, id) => {
       break
     case 'delete':
       await handleDelete(id)
+      break
+    case 'extractExperts':
+      handleExtractExperts(id)
+      break
+    case 'viewExtractedExperts':
+      handleViewExtractedExperts(id)
       break
   }
 }
@@ -262,6 +316,37 @@ const getTypeTag = (type) => {
 const getStatusTag = (status) => {
   const map = { DRAFT: 'info', PUBLISHED: 'success', CLOSED: 'danger' }
   return map[status] || 'info'
+}
+
+const handleExtractExperts = (id) => {
+  currentAnnouncementId.value = id
+  extractCount.value = 1 // 重置抽取数量
+  extractDialogVisible.value = true
+}
+
+const submitExtractExperts = async () => {
+  if (extractCount.value < 1 || extractCount.value > 10) {
+    ElMessage.warning('抽取数量必须在1到10之间')
+    return
+  }
+  try {
+    await extractExperts(currentAnnouncementId.value, extractCount.value)
+    ElMessage.success('专家抽取成功')
+    extractDialogVisible.value = false
+    loadData() // 重新加载数据以更新抽取状态
+  } catch (error) {
+    ElMessage.error(error.message || '专家抽取失败')
+  }
+}
+
+const handleViewExtractedExperts = async (id) => {
+  try {
+    const res = await getExtractedExperts(id)
+    extractedExpertsList.value = res.data
+    viewExpertsDialogVisible.value = true
+  } catch (error) {
+    ElMessage.error(error.message || '获取已抽取专家失败')
+  }
 }
 
 onMounted(() => {

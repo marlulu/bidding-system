@@ -133,6 +133,12 @@ const routes = [
         name: 'UserList',
         component: () => import('@/views/user/List.vue'),
         meta: { title: '用户管理', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'experts',
+        name: 'ExpertList',
+        component: () => import('@/views/expert/List.vue'),
+        meta: { title: '专家库管理', requiresAuth: true, role: 'ADMIN' }
       }
     ]
   },
