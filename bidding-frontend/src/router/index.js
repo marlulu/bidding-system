@@ -45,6 +45,18 @@ const routes = [
         meta: { title: '供应商审核', requiresAuth: true, role: 'ADMIN' }
       },
       {
+        path: 'suppliers/create',
+        name: 'SupplierCreate',
+        component: () => import('@/views/supplier/Form.vue'),
+        meta: { title: '新增供应商', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
+        path: 'suppliers/edit/:id',
+        name: 'SupplierEdit',
+        component: () => import('@/views/supplier/Form.vue'),
+        meta: { title: '编辑供应商', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
         path: 'announcements/create',
         name: 'AnnouncementCreate',
         component: () => import('@/views/announcement/Form.vue'),

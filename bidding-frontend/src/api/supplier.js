@@ -75,3 +75,16 @@ export function registerSupplier(data) {
     data
   })
 }
+
+export function uploadFile(data) {
+  return request({
+    url: 
+'/files/upload
+',
+    method: 'post',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

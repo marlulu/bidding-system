@@ -4,89 +4,110 @@
       <template #header>
         <div class="card-header">
           <span>{{ isEdit ? '编辑供应商信息' : '新增供应商' }}</span>
-          <el-tag v-if="isEdit && supplierData.status !== undefined" :type="getStatusTagType(supplierData.status)">
-            {{ formatStatus(supplierData.status) }}
+          <el-tag v-if="isEdit && form.status !== undefined" :type="getStatusTagType(form.status)">
+            {{ formatStatus(form.status) }}
           </el-tag>
         </div>
       </template>
       
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="140px">
-        <el-form-item label="公司名称" prop="companyName">
-          <el-input v-model="form.companyName" placeholder="请输入公司名称" />
-        </el-form-item>
-        
-        <el-form-item label="统一社会信用代码" prop="companyCode">
-          <el-input v-model="form.companyCode" placeholder="请输入统一社会信用代码" :disabled="isEdit" />
-        </el-form-item>
-        
-        <el-form-item label="法人代表" prop="legalPerson">
-          <el-input v-model="form.legalPerson" placeholder="请输入法人代表" />
-        </el-form-item>
-        
-        <el-form-item label="联系人" prop="contactName">
-          <el-input v-model="form.contactName" placeholder="请输入联系人" />
-        </el-form-item>
-        
-        <el-form-item label="联系电话" prop="contactPhone">
-          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
-        </el-form-item>
-        
-        <el-form-item label="联系邮箱" prop="contactEmail">
-          <el-input v-model="form.contactEmail" placeholder="请输入联系邮箱" type="email" />
-        </el-form-item>
-        
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="150px">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="公司名称" prop="companyName">
+              <el-input v-model="form.companyName" placeholder="请输入公司名称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="统一社会信用代码" prop="companyCode">
+              <el-input v-model="form.companyCode" placeholder="请输入统一社会信用代码" :disabled="isEdit" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="所属行业" prop="industry">
+              <el-select v-model="form.industry" placeholder="请选择所属行业" style="width: 100%;">
+                <el-option label="信息技术" value="信息技术" />
+                <el-option label="建筑工程" value="建筑工程" />
+                <el-option label="医疗器械" value="医疗器械" />
+                <el-option label="办公用品" value="办公用品" />
+                <el-option label="咨询服务" value="咨询服务" />
+                <el-option label="物流运输" value="物流运输" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="公司规模" prop="scale">
+              <el-select v-model="form.scale" placeholder="请选择公司规模" style="width: 100%;">
+                <el-option label="小型" value="SMALL" />
+                <el-option label="中型" value="MEDIUM" />
+                <el-option label="大型" value="LARGE" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="资质等级" prop="qualificationLevel">
+              <el-input v-model="form.qualificationLevel" placeholder="请输入资质等级" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="法人代表" prop="legalPerson">
+              <el-input v-model="form.legalPerson" placeholder="请输入法人代表" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <el-form-item label="联系人" prop="contactName">
+              <el-input v-model="form.contactName" placeholder="请输入联系人姓名" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="联系电话" prop="contactPhone">
+              <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="联系邮箱" prop="contactEmail">
+              <el-input v-model="form.contactEmail" placeholder="请输入联系邮箱" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-form-item label="公司地址" prop="address">
           <el-input v-model="form.address" placeholder="请输入公司地址" />
         </el-form-item>
-        
-        <el-form-item label="行业分类" prop="industry">
-          <el-select v-model="form.industry" placeholder="请选择行业分类">
-            <el-option label="信息技术" value="信息技术" />
-            <el-option label="建筑工程" value="建筑工程" />
-            <el-option label="医疗器械" value="医疗器械" />
-            <el-option label="办公用品" value="办公用品" />
-            <el-option label="咨询服务" value="咨询服务" />
-            <el-option label="物流运输" value="物流运输" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="企业规模" prop="scale">
-          <el-select v-model="form.scale" placeholder="请选择企业规模">
-            <el-option label="小型企业" value="SMALL" />
-            <el-option label="中型企业" value="MEDIUM" />
-            <el-option label="大型企业" value="LARGE" />
-          </el-select>
+
+        <el-form-item label="公司简介" prop="description">
+          <el-input v-model="form.description" type="textarea" :rows="4" placeholder="请输入公司简介" />
         </el-form-item>
 
-        <el-form-item label="资质等级" prop="qualificationLevel">
-          <el-select v-model="form.qualificationLevel" placeholder="请选择资质等级" clearable>
-            <el-option label="一级资质" value="一级资质" />
-            <el-option label="二级资质" value="二级资质" />
-            <el-option label="三级资质" value="三级资质" />
-          </el-select>
+        <el-form-item label="资质文件" prop="qualificationFiles">
+          <el-upload
+            class="upload-demo"
+            action="#"
+            :http-request="handleFileUpload"
+            :on-remove="handleFileRemove"
+            :file-list="fileList"
+            :limit="3"
+            :on-exceed="handleExceed"
+            multiple
+            :auto-upload="true"
+          >
+            <el-button type="primary">点击上传文件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">支持上传图片、PDF等文件，单个文件不超过5MB</div>
+            </template>
+          </el-upload>
         </el-form-item>
 
-        <el-form-item label="公司描述" prop="description">
-          <el-input 
-            v-model="form.description" 
-            type="textarea" 
-            :rows="4"
-            placeholder="请输入公司简介或经营范围等信息"
-          />
-        </el-form-item>
-        
-        <el-form-item label="认证状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio :label="0">待审核</el-radio>
-            <el-radio :label="1">已认证</el-radio>
-            <el-radio :label="2">已驳回</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        
         <el-form-item>
-          <el-button type="primary" @click="handleSubmit" :loading="loading">
-            {{ isEdit ? '更新' : '创建' }}
-          </el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="loading">提交</el-button>
           <el-button @click="handleCancel">取消</el-button>
         </el-form-item>
       </el-form>
@@ -97,52 +118,82 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSupplierById, createSupplier, updateSupplier } from '@/api/supplier'
-import { ElMessage } from 'element-plus'
+import { getSupplierById, createSupplier, updateSupplier, uploadFile } from '@/api/supplier'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
 
 const formRef = ref(null)
 const loading = ref(false)
-const supplierData = ref({})
+const fileList = ref([])
 
 const isEdit = computed(() => !!route.params.id)
 
 const form = reactive({
   companyName: '',
   companyCode: '',
+  industry: '',
+  scale: 'SMALL',
+  qualificationLevel: '',
   legalPerson: '',
   contactName: '',
   contactPhone: '',
   contactEmail: '',
   address: '',
-  industry: '',
-  scale: 'MEDIUM',
-  qualificationLevel: '',
   description: '',
-  status: 0
+  qualificationFiles: '[]',
+  status: 0 // 新增时默认为待审核
 })
 
 const rules = {
   companyName: [{ required: true, message: '请输入公司名称', trigger: 'blur' }],
   companyCode: [{ required: true, message: '请输入统一社会信用代码', trigger: 'blur' }],
-  contactName: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
+  contactName: [{ required: true, message: '请输入联系人姓名', trigger: 'blur' }],
   contactPhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
-  industry: [{ required: true, message: '请选择行业分类', trigger: 'change' }]
 }
 
 const loadData = async () => {
   if (isEdit.value) {
     try {
       const data = await getSupplierById(route.params.id)
-      supplierData.value = data
       Object.assign(form, data)
+      if (data.qualificationFiles) {
+        fileList.value = JSON.parse(data.qualificationFiles).map(file => ({
+          name: file.name,
+          url: file.url,
+          response: { data: file.url } // 模拟上传成功响应
+        }))
+      }
     } catch (error) {
       console.error('加载数据失败', error)
       ElMessage.error('加载供应商信息失败')
     }
   }
+}
+
+const handleFileUpload = async (options) => {
+  const file = options.file
+  const formData = new FormData()
+  formData.append('file', file)
+  try {
+    const res = await uploadFile(formData)
+    const newFile = { name: file.name, url: res.data }
+    fileList.value.push(newFile)
+    form.qualificationFiles = JSON.stringify(fileList.value.map(f => ({ name: f.name, url: f.url })))
+    ElMessage.success('文件上传成功')
+  } catch (error) {
+    ElMessage.error('文件上传失败')
+  }
+}
+
+const handleFileRemove = (file) => {
+  fileList.value = fileList.value.filter(f => f.url !== file.url)
+  form.qualificationFiles = JSON.stringify(fileList.value.map(f => ({ name: f.name, url: f.url })))
+}
+
+const handleExceed = () => {
+  ElMessage.warning('最多只能上传3个文件')
 }
 
 const handleSubmit = async () => {
@@ -160,10 +211,8 @@ const handleSubmit = async () => {
     
     router.push('/suppliers')
   } catch (error) {
-    if (error.message) {
-      ElMessage.error(error.message)
-    }
     console.error('提交失败', error)
+    ElMessage.error(error.message || '提交失败')
   } finally {
     loading.value = false
   }
