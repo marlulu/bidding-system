@@ -1,9 +1,10 @@
 package com.bidding.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bidding.common.Constants;
-import com.bidding.common.PageResult;
+import com.bidding.dto.ChangePasswordRequest;
 import com.bidding.dto.LoginRequest;
 import com.bidding.dto.RegisterRequest;
 import com.bidding.dto.ResetPasswordRequest;
@@ -91,29 +92,22 @@ public class UserService {
     }
 
     /**
-     * 获取用户列表
+     * 获取用户列表（分页，支持按用户名、角色、状态筛选）
      */
-    public PageResult<UserVO> getUserList(Integer page, Integer size, String keyword, String role) {
-        Page<User> pageParam = new Page<>(page, size);
+    public IPage<User> getUserList(Page<User> page, String username, String role, Integer status) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        
-        if (StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(User::getUsername, keyword)
-                    .or().like(User::getRealName, keyword)
-                    .or().like(User::getPhone, keyword));
+
+        if (StringUtils.hasText(username)) {
+            wrapper.like(User::getUsername, username);
         }
-        
         if (StringUtils.hasText(role)) {
             wrapper.eq(User::getRole, role);
         }
-        
+        if (status != null) {
+            wrapper.eq(User::getStatus, status);
+        }
         wrapper.orderByDesc(User::getCreateTime);
-        Page<User> result = userMapper.selectPage(pageParam, wrapper);
-        
-        return new PageResult<>(
-                result.getTotal(),
-                result.getRecords().stream().map(this::convertToVO).toList()
-        );
+        return userMapper.selectPage(page, wrapper);
     }
 
     /**
@@ -175,6 +169,17 @@ public class UserService {
     }
 
     /**
+     * 更新用户角色
+     */
+    @Transactional
+    public void updateUserRole(Long id, String role) {
+        User user = new User();
+        user.setId(id);
+        user.setRole(role);
+        userMapper.updateById(user);
+    }
+
+    /**
      * 用户注册
      */
     @Transactional
@@ -208,6 +213,26 @@ public class UserService {
             throw new RuntimeException("用户不存在");
         }
 
+        user.setPassword(PasswordUtil.encrypt(request.getNewPassword()));
+        userMapper.updateById(user);
+    }
+
+    /**
+     * 修改密码
+     */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        // 验证旧密码
+        if (!PasswordUtil.verify(request.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("旧密码不正确");
+        }
+
+        // 更新新密码
         user.setPassword(PasswordUtil.encrypt(request.getNewPassword()));
         userMapper.updateById(user);
     }

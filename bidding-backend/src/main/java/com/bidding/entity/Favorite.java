@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("user_favorite")
+@TableName("sys_favorite")
 public class Favorite {
     @TableId(type = IdType.AUTO)
     private Long id;

@@ -138,4 +138,16 @@ INSERT INTO `system_notice` (`title`, `content`) VALUES
 ('系统维护通知', '系统将于本周六凌晨2:00-4:00进行例行维护。'),
 ('新版供应商管理办法上线', '请各供应商及时查看最新的管理办法。');
 
+-- 6. 用户收藏表 (sys_favorite)
+DROP TABLE IF EXISTS `sys_favorite`;
+CREATE TABLE `sys_favorite` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `target_id` bigint(20) NOT NULL COMMENT '收藏目标ID',
+  `target_type` varchar(50) NOT NULL COMMENT '收藏目标类型: ANNOUNCEMENT, SUPPLIER',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_target` (`user_id`, `target_id`, `target_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏表';
+
 SET FOREIGN_KEY_CHECKS = 1;

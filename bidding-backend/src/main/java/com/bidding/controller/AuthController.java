@@ -5,6 +5,7 @@ import com.bidding.common.Result;
 import com.bidding.dto.LoginRequest;
 import com.bidding.dto.RegisterRequest;
 import com.bidding.dto.ResetPasswordRequest;
+import com.bidding.dto.ChangePasswordRequest;
 import com.bidding.service.UserService;
 import com.bidding.vo.LoginVO;
 import com.bidding.vo.UserVO;
@@ -62,7 +63,24 @@ public class AuthController {
      * 忘记密码/重置密码
      */
     @PostMapping("/reset-password")
-    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {}
+
+    /**
+     * 修改密码
+     */
+    @PostMapping("/change-password")
+    public Result<String> changePassword(@RequestAttribute("userId") Long userId, @Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            userService.changePassword(userId, request);
+            return Result.success("密码修改成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 忘记密码/重置密码
+     */
         try {
             userService.resetPassword(request);
             return Result.success("密码重置成功", null);
