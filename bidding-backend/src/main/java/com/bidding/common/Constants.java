@@ -12,6 +12,7 @@ public class Constants {
     // 用户状态
     public static final Integer USER_STATUS_DISABLED = 0;
     public static final Integer USER_STATUS_ENABLED = 1;
+    public static final Integer USER_STATUS_PENDING_REVIEW = 2; // 用户待审核状态
     
     // 供应商状态
     public static final Integer SUPPLIER_STATUS_PENDING = 0;

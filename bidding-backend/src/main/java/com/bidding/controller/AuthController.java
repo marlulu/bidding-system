@@ -3,6 +3,8 @@ package com.bidding.controller;
 import com.bidding.common.LoginUser;
 import com.bidding.common.Result;
 import com.bidding.dto.LoginRequest;
+import com.bidding.dto.RegisterRequest;
+import com.bidding.dto.ResetPasswordRequest;
 import com.bidding.service.UserService;
 import com.bidding.vo.LoginVO;
 import com.bidding.vo.UserVO;
@@ -41,5 +43,31 @@ public class AuthController {
     @PostMapping("/logout")
     public Result<Void> logout() {
         return Result.success("登出成功", null);
+    }
+
+    /**
+     * 用户注册
+     */
+    @PostMapping("/register")
+    public Result<Void> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            userService.register(request);
+            return Result.success("注册成功，请等待管理员审核", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 忘记密码/重置密码
+     */
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            userService.resetPassword(request);
+            return Result.success("密码重置成功", null);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
     }
 }

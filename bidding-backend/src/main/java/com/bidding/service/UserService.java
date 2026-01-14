@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bidding.common.Constants;
 import com.bidding.common.PageResult;
 import com.bidding.dto.LoginRequest;
+import com.bidding.dto.RegisterRequest;
+import com.bidding.dto.ResetPasswordRequest;
 import com.bidding.entity.Supplier;
 import com.bidding.entity.User;
 import com.bidding.mapper.SupplierMapper;
@@ -128,6 +130,7 @@ public class UserService {
 
         // 加密密码
         user.setPassword(PasswordUtil.encrypt(user.getPassword()));
+        user.setStatus(Constants.USER_STATUS_ENABLED); // 默认启用
         userMapper.insert(user);
     }
 
@@ -168,6 +171,44 @@ public class UserService {
         User user = new User();
         user.setId(id);
         user.setStatus(status);
+        userMapper.updateById(user);
+    }
+
+    /**
+     * 用户注册
+     */
+    @Transactional
+    public void register(RegisterRequest request) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, request.getUsername());
+        if (userMapper.selectCount(wrapper) > 0) {
+            throw new RuntimeException("用户名已存在");
+        }
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(PasswordUtil.encrypt(request.getPassword()));
+        user.setRealName(request.getRealName());
+        user.setRole(request.getRole());
+        user.setSupplierId(request.getSupplierId());
+        user.setStatus(Constants.USER_STATUS_PENDING_REVIEW); // 注册用户默认为待审核状态
+        userMapper.insert(user);
+    }
+
+    /**
+     * 重置密码
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, request.getUsername());
+        User user = userMapper.selectOne(wrapper);
+
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        user.setPassword(PasswordUtil.encrypt(request.getNewPassword()));
         userMapper.updateById(user);
     }
 
