@@ -36,8 +36,8 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
-                  <el-dropdown-item command="favorites">我的收藏</el-dropdown-item>
-                  <el-dropdown-item v-if="userStore.isAdmin()" command="admin">后台管理</el-dropdown-item>
+                  <el-dropdown-item command="profile?tab=favorites">我的收藏</el-dropdown-item>
+                  <el-dropdown-item v-if="userStore.isAdmin()" command="users">后台管理</el-dropdown-item>
                   <el-dropdown-item v-if="userStore.isAdmin()" command="experts">专家库管理</el-dropdown-item>
                   <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
@@ -179,6 +179,9 @@ const handleCommand = (command) => {
     userStore.logout()
     router.push('/')
     ElMessage.success('已退出登录')
+  } else if (command.includes('?')) {
+    const [path, query] = command.split('?')
+    router.push({ path: `/${path}`, query: Object.fromEntries(new URLSearchParams(query)) })
   } else {
     router.push(`/${command}`)
   }

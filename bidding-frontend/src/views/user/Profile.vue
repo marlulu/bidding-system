@@ -137,6 +137,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { User, Star, Document, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -147,7 +148,8 @@ import { getSupplierDetail } from '@/api/supplier'
 import { getToken } from '@/utils/auth'
 
 const userStore = useUserStore()
-const activeTab = ref('info')
+const route = useRoute()
+const activeTab = ref(route.query.tab || 'info')
 const favTab = ref('announcement')
 
 const userFormRef = ref(null)
@@ -254,6 +256,11 @@ const handleChangePassword = async () => {
     ElMessage.error('修改密码失败: ' + (error.message || '未知错误'))
   }
 }
+
+// 监听 URL 中的 tab 参数变化，同步到 activeTab
+watch(() => route.query.tab, (newTab) => {
+  activeTab.value = newTab || 'info'
+}, { immediate: true })
 
 // 监听 userStore.userInfo 变化，同步到 userForm
 watch(() => userStore.userInfo, (newVal) => {
