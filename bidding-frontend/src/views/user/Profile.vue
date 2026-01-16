@@ -86,7 +86,7 @@
                   <el-table-column prop="contactPhone" label="联系电话" width="150" />
                   <el-table-column label="操作" width="150">
                     <template #default="{ row }">
-                      <el-button link type="primary" @nclick="viewSupplierDetail(row.targetId)">查看</el-button>
+                      <el-button link type="primary" @click="viewSupplierDetail(row.targetId)">查看</el-button>
                       <el-button link type="danger" @click="handleRemoveFavorite(row.id)">取消收藏</el-button>
                     </template>
                   </el-table-column>
