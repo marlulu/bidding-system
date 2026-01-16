@@ -44,3 +44,11 @@ export function updateUserRole(id, role) {
     method: 'put'
   })
 }
+
+export function changePassword(data) {
+  return request({
+    url: '/auth/change-password',
+    method: 'post',
+    data
+  })
+}
