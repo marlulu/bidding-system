@@ -24,6 +24,14 @@ export function updateUser(id, data) {
   })
 }
 
+export function updateUserInfo(id, data) {
+  return request({
+    url: `/users/${id}/info`,
+    method: 'put',
+    data
+  })
+}
+
 export function deleteUser(id) {
   return request({
     url: `/users/${id}`,
