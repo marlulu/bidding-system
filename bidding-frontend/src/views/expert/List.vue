@@ -1,9 +1,9 @@
 <template>
   <div class="app-container">
     <el-card class="box-card">
-      <div slot="header" class="clearfix">
+      <template #header class="clearfix">
         <span>专家库管理</span>
-        <el-button style="float: right; padding: 3px 0" type="text" icon="Plus" @click="handleAdd">新增专家</el-button>
+        <el-button style="float: right; padding: 3px 0" type="text" :icon="Plus" @click="handleAdd">新增专家</el-button>
       </div>
       <el-form :inline="true" :model="searchForm" class="demo-form-inline">
         <el-form-item label="专家姓名">
@@ -13,8 +13,8 @@
           <el-input v-model="searchForm.specialty" placeholder="请输入专业领域"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
-          <el-button icon="Refresh" @click="handleReset">重置</el-button>
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button :icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
 
@@ -27,8 +27,8 @@
         highlight-current-row
       >
         <el-table-column align="center" label="ID" width="95">
-          <template slot-scope="scope">
-            {{ scope.row.id }}
+          <template #default="{ row }">
+            {{ row.id }}
           </template>
         </el-table-column>
         <el-table-column label="专家姓名" prop="name"></el-table-column>
@@ -38,22 +38,32 @@
         <el-table-column label="邮箱" prop="email"></el-table-column>
         <el-table-column label="简介" prop="description" show-overflow-tooltip></el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160">
-          <template slot-scope="scope">
-            {{ scope.row.createTime | parseTime }}
+          <template #default="{ row }">
+            {{ row.createTime }}
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="180" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+          <template #default="{ row }">
+            <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
+      <el-pagination
+        v-show="total>0"
+        :total="total"
+        v-model:current-page="listQuery.pageNum"
+        v-model:page-size="listQuery.pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="getList"
+        @current-change="getList"
+        style="margin-top: 20px; justify-content: flex-end;"
+      />
     </el-card>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
         <el-form-item label="专家姓名" prop="name">
           <el-input v-model="temp.name" />
@@ -74,7 +84,7 @@
           <el-input v-model="temp.description" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <template #footer>
         <el-button @click="dialogFormVisible = false">取消</el-button>
         <el-button type="primary" @click="dialogStatus===\'create\'?createData():updateData()">确认</el-button>
       </div>
@@ -86,7 +96,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getExpertList, addExpert, updateExpert, deleteExpert } from '@/api/expert'
-import Pagination from '@/components/Pagination/index.vue'
+import { Plus, Search, Refresh } from '@element-plus/icons-vue'
+
+
+
 
 const listLoading = ref(true)
 const list = ref([])
@@ -97,9 +110,9 @@ const listQuery = reactive({
 })
 const searchForm = reactive({
   name: 
-ull,
+null,
   specialty: 
-ull
+null
 })
 
 const dialogFormVisible = ref(false)
