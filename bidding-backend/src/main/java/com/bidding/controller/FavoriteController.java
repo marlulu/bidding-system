@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 public class FavoriteController {
 
     @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
     private FavoriteService favoriteService;
 
     /**
@@ -22,7 +25,7 @@ public class FavoriteController {
      */
     @PostMapping
     public Result<String> addFavorite(@RequestBody Favorite favorite) {
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = (Long) this.request.getAttribute("userId");
         if (userId == null) {
             throw new RuntimeException("用户未登录");
         }
@@ -40,7 +43,7 @@ public class FavoriteController {
     public Result<String> removeFavorite(
             @RequestParam Long targetId,
             @RequestParam String targetType) {
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = (Long) this.request.getAttribute("userId");
         if (userId == null) {
             throw new RuntimeException("用户未登录");
         }
@@ -60,7 +63,7 @@ public class FavoriteController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String targetType) {
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = (Long) this.request.getAttribute("userId");
         if (userId == null) {
             throw new RuntimeException("用户未登录");
         }
@@ -78,7 +81,7 @@ public class FavoriteController {
     public Result<Boolean> checkFavorite(
             @RequestParam Long targetId,
             @RequestParam String targetType) {
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = (Long) this.request.getAttribute("userId");
         if (userId == null) {
             throw new RuntimeException("用户未登录");
         }

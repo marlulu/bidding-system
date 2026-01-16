@@ -6,6 +6,7 @@ import com.bidding.service.UserService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.bidding.vo.UserVO;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -93,7 +94,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     public Result<String> deleteUser(@PathVariable Long id) {
-        userService.removeById(id);
+        userService.deleteUser(id);
         return Result.success("删除成功");
     }
 }
