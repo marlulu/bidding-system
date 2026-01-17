@@ -141,7 +141,7 @@ import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { User, Star, Document, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { updateUserInfo as apiUpdateUserInfo, changePassword as apiChangePassword } from '@/api/user'
+import * as userApi from '@/api/user'
 import { getFavorites, removeFavorite } from '@/api/favorite'
 import { getAnnouncementDetail } from '@/api/announcement'
 import { getSupplierDetail } from '@/api/supplier'
@@ -236,7 +236,7 @@ const beforeAvatarUpload = (file) => {
 const handleUpdateUserInfo = async () => {
   try {
     await userFormRef.value.validate()
-    await apiUpdateUserInfo(userForm.id, userForm)
+    await userApi.updateUserInfo(userForm.id, userForm)
     userStore.setUserInfo({ ...userStore.userInfo, ...userForm }) // 更新 store 中的用户信息
     ElMessage.success('个人信息更新成功')
   } catch (error) {
@@ -248,7 +248,7 @@ const handleUpdateUserInfo = async () => {
 const handleChangePassword = async () => {
   try {
     await passwordFormRef.value.validate()
-    await apiChangePassword(passwordForm)
+    await userApi.changePassword(passwordForm)
     ElMessage.success('密码修改成功，请重新登录')
     userStore.logout() // 修改密码成功后强制退出登录
   } catch (error) {
