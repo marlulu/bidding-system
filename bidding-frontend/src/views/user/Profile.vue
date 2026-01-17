@@ -137,7 +137,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { User, Star, Document, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -149,6 +149,7 @@ import { getToken } from '@/utils/auth'
 
 const userStore = useUserStore()
 const route = useRoute()
+const router = useRouter()
 const activeTab = ref(route.query.tab || 'info')
 const favTab = ref('announcement')
 
