@@ -117,7 +117,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAnnouncementById } from '@/api/announcement'
+import { getAnnouncementDetail } from '@/api/announcement'
 
 const route = useRoute()
 const router = useRouter()
@@ -128,7 +128,7 @@ const detail = ref({})
 const loadData = async () => {
   loading.value = true
   try {
-    detail.value = await getAnnouncementById(route.params.id)
+    detail.value = await getAnnouncementDetail(route.params.id)
   } catch (error) {
     console.error('加载详情失败', error)
   } finally {

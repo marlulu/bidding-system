@@ -118,7 +118,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSupplierById, createSupplier, updateSupplier, uploadFile } from '@/api/supplier'
+import { getSupplierDetail, createSupplier, updateSupplier, uploadFile } from '@/api/supplier'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const route = useRoute()
@@ -156,7 +156,7 @@ const rules = {
 const loadData = async () => {
   if (isEdit.value) {
     try {
-      const data = await getSupplierById(route.params.id)
+      const data = await getSupplierDetail(route.params.id)
       Object.assign(form, data)
       if (data.qualificationFiles) {
         fileList.value = JSON.parse(data.qualificationFiles).map(file => ({

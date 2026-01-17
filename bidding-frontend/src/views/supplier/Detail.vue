@@ -37,7 +37,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSupplierById } from '@/api/supplier'
+import { getSupplierDetail } from '@/api/supplier'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,7 +48,7 @@ const detail = ref({})
 const loadData = async () => {
   loading.value = true
   try {
-    detail.value = await getSupplierById(route.params.id)
+    detail.value = await getSupplierDetail(route.params.id)
   } catch (error) {
     console.error('加载详情失败', error)
   } finally {

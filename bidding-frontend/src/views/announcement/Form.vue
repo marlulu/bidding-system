@@ -122,7 +122,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAnnouncementById, createAnnouncement, updateAnnouncement, publishAnnouncement } from '@/api/announcement'
+import { getAnnouncementDetail, createAnnouncement, updateAnnouncement, publishAnnouncement } from '@/api/announcement'
 import { getAllSuppliers } from '@/api/supplier'
 import { ElMessage } from 'element-plus'
 
@@ -172,7 +172,7 @@ const loadSuppliers = async () => {
 const loadData = async () => {
   if (isEdit.value) {
     try {
-      const data = await getAnnouncementById(route.params.id)
+      const data = await getAnnouncementDetail(route.params.id)
       announcementData.value = data
       Object.assign(form, data)
       if (data.visibleSupplierIds) {
