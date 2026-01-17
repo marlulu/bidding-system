@@ -31,7 +31,7 @@ export function getAllSuppliers() {
   }).catch(() => mockSuppliers)
 }
 
-export function getSupplierById(id) {
+export function getSupplierDetail(id) {
   return request({
     url: `/suppliers/${id}`,
     method: 'get'

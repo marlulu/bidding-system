@@ -26,7 +26,7 @@ export function getAnnouncementList(params) {
   })
 }
 
-export function getAnnouncementById(id) {
+export function getAnnouncementDetail(id) {
   return request({
     url: `/announcements/${id}`,
     method: 'get'
