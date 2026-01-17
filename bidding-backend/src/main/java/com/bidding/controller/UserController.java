@@ -64,6 +64,19 @@ public class UserController {
     }
 
     /**
+     * 更新用户个人信息（用于 Profile 页面）
+     * @param id 用户ID
+     * @param user 用户信息
+     * @return 更新结果
+     */
+    @PutMapping("/{id}/info")
+    public Result<String> updateUserInfo(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        userService.updateUser(user);
+        return Result.success("个人信息更新成功");
+    }
+
+    /**
      * 更新用户状态
      * @param id 用户ID
      * @param status 状态 (0: 待审核, 1: 正常, 2: 禁用)
