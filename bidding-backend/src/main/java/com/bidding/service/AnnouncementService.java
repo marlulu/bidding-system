@@ -90,8 +90,10 @@ public class AnnouncementService {
         }
 
         // 权限校验：只有管理员或发布者本人可以修改
-        if (!Constants.ROLE_ADMIN.equals(currentUserRole) && !existingAnnouncement.getPublisherId().equals(currentUserId)) {
-            throw new RuntimeException("无权修改该公告");
+        if (!Constants.ROLE_ADMIN.equals(currentUserRole)) {
+            if (existingAnnouncement.getPublisherId() == null || !existingAnnouncement.getPublisherId().equals(currentUserId)) {
+                throw new RuntimeException("无权修改该公告");
+            }
         }
 
         // 如果公告状态是已发布，且当前用户不是管理员，则不允许修改某些关键字段

@@ -17,8 +17,8 @@ public class SupplierController {
 
     private void checkAdmin(HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
-        if (!Constants.ROLE_ADMIN.equals(role)) {
-            throw new RuntimeException("无权操作");
+        if (role == null || !Constants.ROLE_ADMIN.equals(role)) {
+            throw new RuntimeException("无权操作，仅限管理员");
         }
     }
 

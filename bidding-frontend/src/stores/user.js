@@ -67,6 +67,15 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('userInfo')
   }
 
+  const setUserInfo = (info) => {
+    userInfo.value = info
+    if (info) {
+      localStorage.setItem('userInfo', JSON.stringify(info))
+    } else {
+      localStorage.removeItem('userInfo')
+    }
+  }
+
   const isAdmin = () => userInfo.value?.role === 'ADMIN'
   const isSupplier = () => userInfo.value?.role === 'SUPPLIER'
 
@@ -80,6 +89,7 @@ export const useUserStore = defineStore('user', () => {
     init,
     login,
     logout,
+    setUserInfo,
     isAdmin,
     isSupplier
   }

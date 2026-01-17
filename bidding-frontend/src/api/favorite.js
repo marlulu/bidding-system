@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getFavorites(params) {
   return request({
-    url: '/favorites',
+    url: '/favorites/list',
     method: 'get',
     params
   })

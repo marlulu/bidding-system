@@ -216,7 +216,9 @@ const handleAvatarSuccess = (res) => {
   // 因为它不走我们封装的 axios 拦截器（除非自定义 http-request）
   if (res.code === 200) {
     userForm.avatar = res.data
-    userStore.setUserInfo({ ...userStore.userInfo, avatar: res.data })
+    if (userStore.setUserInfo) {
+      userStore.setUserInfo({ ...userStore.userInfo, avatar: res.data })
+    }
     ElMessage.success('头像上传成功')
   } else {
     ElMessage.error('头像上传失败: ' + (res.message || '未知错误'))
@@ -240,7 +242,9 @@ const handleUpdateUserInfo = async () => {
   try {
     await userFormRef.value.validate()
     await userApi.updateUserInfo(userForm.id, userForm)
-    userStore.setUserInfo({ ...userStore.userInfo, ...userForm }) // 更新 store 中的用户信息
+    if (userStore.setUserInfo) {
+      userStore.setUserInfo({ ...userStore.userInfo, ...userForm }) // 更新 store 中的用户信息
+    }
     ElMessage.success('个人信息更新成功')
   } catch (error) {
     console.error('更新个人信息失败', error)
