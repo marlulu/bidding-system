@@ -12,9 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class AnnouncementService {
 
@@ -84,14 +87,19 @@ public class AnnouncementService {
 
     @Transactional
     public void updateAnnouncement(Announcement announcement, Long currentUserId, String currentUserRole) {
+        log.info("[AnnouncementService] 开始更新公告, ID: {}, 当前用户ID: {}, 角色: {}", announcement.getId(), currentUserId, currentUserRole);
         Announcement existingAnnouncement = announcementMapper.selectById(announcement.getId());
         if (existingAnnouncement == null) {
             throw new RuntimeException("公告不存在");
         }
 
         // 权限校验：只有管理员或发布者本人可以修改
-        if (!Constants.ROLE_ADMIN.equals(currentUserRole)) {
+        String role = currentUserRole != null ? currentUserRole.trim() : "";
+        log.info("[AnnouncementService] 权限校验: Constants.ROLE_ADMIN='{}', currentUserRole='{}', trimmedRole='{}'", Constants.ROLE_ADMIN, currentUserRole, role);
+        if (!Constants.ROLE_ADMIN.equalsIgnoreCase(role)) {
+            log.info("[AnnouncementService] 非管理员, 检查是否为发布者本人. 发布者ID: {}", existingAnnouncement.getPublisherId());
             if (existingAnnouncement.getPublisherId() == null || !existingAnnouncement.getPublisherId().equals(currentUserId)) {
+                log.error("[AnnouncementService] 权限校验失败: 用户 {} 无权修改公告 {}", currentUserId, announcement.getId());
                 throw new RuntimeException("无权修改该公告");
             }
         }

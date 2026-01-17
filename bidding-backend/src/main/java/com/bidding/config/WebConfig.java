@@ -41,10 +41,11 @@ public class WebConfig implements WebMvcConfigurer {
                         if (jwtUtil.validateToken(token)) {
                             Long userId = jwtUtil.getUserIdFromToken(token);
                             String role = jwtUtil.getRoleFromToken(token);
-                            log.info("拦截器成功解析 Token, userId: {}, role: {}", userId, role);
+                            log.info("[AuthInterceptor] 成功解析 Token, userId: {}, role: {}", userId, role);
                             // 存入 request 属性，供参数解析器使用
                             request.setAttribute("userId", userId);
                             request.setAttribute("role", role);
+                            log.info("[AuthInterceptor] 已将 userId 和 role 存入 request 属性");
                             // 如果是供应商，则从 token 中获取 supplierId
                             if ("SUPPLIER".equals(role)) {
                                 Long supplierId = jwtUtil.getSupplierIdFromToken(token);
