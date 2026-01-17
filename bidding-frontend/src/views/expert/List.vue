@@ -4,7 +4,7 @@
       <template #header class="clearfix">
         <span>专家库管理</span>
         <el-button style="float: right; padding: 3px 0" type="text" :icon="Plus" @click="handleAdd">新增专家</el-button>
-      </div>
+      </template>
       <el-form :inline="true" :model="searchForm" class="demo-form-inline">
         <el-form-item label="专家姓名">
           <el-input v-model="searchForm.name" placeholder="请输入专家姓名"></el-input>
@@ -87,7 +87,7 @@
       <template #footer>
         <el-button @click="dialogFormVisible = false">取消</el-button>
         <el-button type="primary" @click="dialogStatus===\'create\'?createData():updateData()">确认</el-button>
-      </div>
+      </template>
     </el-dialog>
   </div>
 </template>
