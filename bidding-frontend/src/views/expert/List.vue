@@ -140,8 +140,8 @@ const rules = reactive({
 const getList = () => {
   listLoading.value = true
   getExpertList({ ...listQuery, ...searchForm }).then(response => {
-    list.value = response.data.records
-    total.value = response.data.total
+    list.value = response.records
+    total.value = response.total
     listLoading.value = false
   })
 }
