@@ -1,5 +1,6 @@
 package com.bidding.controller;
 
+import com.bidding.common.PageResult;
 import com.bidding.common.Result;
 import com.bidding.entity.User;
 import com.bidding.service.UserService;
@@ -18,23 +19,23 @@ public class UserController {
 
     /**
      * 获取用户列表（分页，支持按用户名、角色、状态筛选）
-     * @param pageNum 页码
-     * @param pageSize 每页数量
+     * @param page 页码
+     * @param size 每页数量
      * @param username 用户名（可选）
      * @param role 角色（可选）
      * @param status 状态（可选）
      * @return 用户列表
      */
     @GetMapping
-    public Result<IPage<User>> getUserList(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+    public Result<PageResult<User>> getUserList(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) Integer status) {
-        Page<User> page = new Page<>(pageNum, pageSize);
-        IPage<User> userPage = userService.getUserList(page, username, role, status);
-        return Result.success(userPage);
+        Page<User> pageParam = new Page<>(page, size);
+        IPage<User> userPage = userService.getUserList(pageParam, username, role, status);
+        return Result.success(new PageResult<>(userPage.getTotal(), userPage.getRecords()));
     }
 
     /**

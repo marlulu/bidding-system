@@ -197,7 +197,7 @@ const loadData = async () => {
     pagination.total = res.total
     // 检查每个公告的专家抽取状态
     for (const item of tableData.value) {
-      item.hasExtractedExperts = await checkExtractionStatus(item.id).then(res => res.data)
+      item.hasExtractedExperts = await checkExtractionStatus(item.id)
     }
   } catch (error) {
     console.error('加载列表失败', error)
@@ -342,7 +342,7 @@ const submitExtractExperts = async () => {
 const handleViewExtractedExperts = async (id) => {
   try {
     const res = await getExtractedExperts(id)
-    extractedExpertsList.value = res.data
+    extractedExpertsList.value = res
     viewExpertsDialogVisible.value = true
   } catch (error) {
     ElMessage.error(error.message || '获取已抽取专家失败')

@@ -212,12 +212,14 @@ const handleSelect = (index) => {
 }
 
 const handleAvatarSuccess = (res) => {
+  // 注意：el-upload 的 onSuccess 回调参数 res 是原始响应数据，
+  // 因为它不走我们封装的 axios 拦截器（除非自定义 http-request）
   if (res.code === 200) {
-    userForm.avatar = res.data // 假设后端返回的是文件URL
+    userForm.avatar = res.data
     userStore.setUserInfo({ ...userStore.userInfo, avatar: res.data })
     ElMessage.success('头像上传成功')
   } else {
-    ElMessage.error('头像上传失败: ' + res.message)
+    ElMessage.error('头像上传失败: ' + (res.message || '未知错误'))
   }
 }
 
@@ -274,19 +276,23 @@ watch(() => userStore.userInfo, (newVal) => {
 const loadFavorites = async () => {
   favoriteLoading.value = true
   try {
-    const res = await getFavorites({ targetType: favTab.value.toUpperCase() })
+    const res = await getFavorites({ 
+      page: 1, 
+      size: 100, // 个人中心暂时显示前100条
+      targetType: favTab.value.toUpperCase() 
+    })
     if (favTab.value === 'announcement') {
       // 批量获取公告详情
-      const announcementDetails = await Promise.all(res.data.records.map(async (fav) => {
+      const announcementDetails = await Promise.all(res.records.map(async (fav) => {
         const detail = await getAnnouncementDetail(fav.targetId)
-        return { ...fav, ...detail.data }
+        return { ...fav, ...detail }
       }))
       favoriteAnnouncements.value = announcementDetails
     } else if (favTab.value === 'supplier') {
       // 批量获取供应商详情
-      const supplierDetails = await Promise.all(res.data.records.map(async (fav) => {
+      const supplierDetails = await Promise.all(res.records.map(async (fav) => {
         const detail = await getSupplierDetail(fav.targetId)
-        return { ...fav, ...detail.data }
+        return { ...fav, ...detail }
       }))
       favoriteSuppliers.value = supplierDetails
     }

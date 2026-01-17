@@ -1,13 +1,17 @@
 package com.bidding.controller;
 
+import com.bidding.common.PageResult;
 import com.bidding.common.Result;
 import com.bidding.entity.Expert;
 import com.bidding.service.ExpertService;
+import com.bidding.vo.ExpertVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/experts")
@@ -20,13 +24,20 @@ public class ExpertController {
      * 分页查询专家列表
      */
     @GetMapping
-    public Result<IPage<Expert>> getExpertPage(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+    public Result<PageResult<ExpertVO>> getExpertPage(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
             Expert expert) {
-        Page<Expert> page = new Page<>(pageNum, pageSize);
-        IPage<Expert> expertPage = expertService.getExpertPage(page, expert);
-        return Result.success(expertPage);
+        Page<Expert> pageParam = new Page<>(page, size);
+        IPage<Expert> expertPage = expertService.getExpertPage(pageParam, expert);
+        
+        List<ExpertVO> voList = expertPage.getRecords().stream().map(e -> {
+            ExpertVO vo = new ExpertVO();
+            BeanUtils.copyProperties(e, vo);
+            return vo;
+        }).collect(Collectors.toList());
+        
+        return Result.success(new PageResult<>(expertPage.getTotal(), voList));
     }
 
     /**

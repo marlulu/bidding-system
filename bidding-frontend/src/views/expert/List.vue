@@ -53,8 +53,8 @@
       <el-pagination
         v-show="total>0"
         :total="total"
-        v-model:current-page="listQuery.pageNum"
-        v-model:page-size="listQuery.pageSize"
+        v-model:current-page="listQuery.page"
+        v-model:page-size="listQuery.size"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="getList"
@@ -105,8 +105,8 @@ const listLoading = ref(true)
 const list = ref([])
 const total = ref(0)
 const listQuery = reactive({
-  pageNum: 1,
-  pageSize: 10
+  page: 1,
+  size: 10
 })
 const searchForm = reactive({
   name: 
@@ -137,24 +137,29 @@ const rules = reactive({
   phone: [{ required: true, message: '联系电话不能为空', trigger: 'blur' }]
 })
 
-const getList = () => {
+const getList = async () => {
   listLoading.value = true
-  getExpertList({ ...listQuery, ...searchForm }).then(response => {
+  try {
+    const response = await getExpertList({ ...listQuery, ...searchForm })
     list.value = response.records
     total.value = response.total
+  } catch (error) {
+    console.error('加载专家列表失败', error)
+    ElMessage.error('加载专家列表失败')
+  } finally {
     listLoading.value = false
-  })
+  }
 }
 
 const handleSearch = () => {
-  listQuery.pageNum = 1
+  listQuery.page = 1
   getList()
 }
 
 const handleReset = () => {
   searchForm.name = null
   searchForm.specialty = null
-  listQuery.pageNum = 1
+  listQuery.page = 1
   getList()
 }
 

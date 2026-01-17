@@ -180,3 +180,26 @@ CREATE TABLE `sys_expert_extraction` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_announcement_expert` (`announcement_id`, `expert_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='专家抽取记录表';
+
+-- 9. 通知阅读记录表 (notice_read_record)
+DROP TABLE IF EXISTS `notice_read_record`;
+CREATE TABLE `notice_read_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `notice_id` bigint(20) NOT NULL COMMENT '通知ID',
+  `user_id` bigint(20) NOT NULL COMMENT '用户ID',
+  `read_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '阅读时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_notice_user` (`notice_id`, `user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知阅读记录表';
+
+-- 10. 投标记录表 (bid_record)
+DROP TABLE IF EXISTS `bid_record`;
+CREATE TABLE `bid_record` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `announcement_id` bigint(20) NOT NULL COMMENT '招标公告ID',
+  `supplier_id` bigint(20) NOT NULL COMMENT '供应商ID',
+  `bid_amount` decimal(18,2) NOT NULL COMMENT '投标金额',
+  `status` varchar(20) NOT NULL DEFAULT 'SUBMITTED' COMMENT '状态: SUBMITTED, WIN, LOSE',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='投标记录表';

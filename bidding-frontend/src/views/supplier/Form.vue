@@ -178,7 +178,7 @@ const handleFileUpload = async (options) => {
   formData.append('file', file)
   try {
     const res = await uploadFile(formData)
-    const newFile = { name: file.name, url: res.data }
+    const newFile = { name: file.name, url: res }
     fileList.value.push(newFile)
     form.qualificationFiles = JSON.stringify(fileList.value.map(f => ({ name: f.name, url: f.url })))
     ElMessage.success('文件上传成功')

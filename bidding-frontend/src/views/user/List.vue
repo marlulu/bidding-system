@@ -77,8 +77,8 @@
       </el-table>
       
       <el-pagination
-        v-model:current-page="pagination.pageNum"
-        v-model:page-size="pagination.pageSize"
+        v-model:current-page="pagination.page"
+        v-model:page-size="pagination.size"
         :total="pagination.total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
@@ -161,8 +161,8 @@ const searchForm = reactive({
 })
 
 const pagination = reactive({
-  pageNum: 1,
-  pageSize: 10,
+  page: 1,
+  size: 10,
   total: 0
 })
 
@@ -192,14 +192,14 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await getUserList({
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize,
+      page: pagination.page,
+      size: pagination.size,
       username: searchForm.username,
       role: searchForm.role,
       status: searchForm.status
     })
-    tableData.value = res.data.records
-    pagination.total = res.data.total
+    tableData.value = res.records
+    pagination.total = res.total
   } catch (error) {
     console.error('加载数据失败', error)
     ElMessage.error('加载用户列表失败')
@@ -211,7 +211,7 @@ const loadData = async () => {
 const loadSuppliers = async () => {
   try {
     const res = await getAllSuppliers()
-    suppliers.value = res.data
+    suppliers.value = res
   } catch (error) {
     console.error('加载供应商列表失败', error)
     ElMessage.error('加载供应商列表失败')
@@ -219,7 +219,7 @@ const loadSuppliers = async () => {
 }
 
 const handleSearch = () => {
-  pagination.pageNum = 1
+  pagination.page = 1
   loadData()
 }
 

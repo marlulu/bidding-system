@@ -1,5 +1,6 @@
 package com.bidding.controller;
 
+import com.bidding.common.PageResult;
 import com.bidding.common.Result;
 import com.bidding.entity.Favorite;
 import com.bidding.service.FavoriteService;
@@ -53,22 +54,22 @@ public class FavoriteController {
 
     /**
      * 获取用户收藏列表
-     * @param pageNum 页码
-     * @param pageSize 每页数量
+     * @param page 页码
+     * @param size 每页数量
      * @param targetType 收藏目标类型（可选）
      * @return 收藏列表
      */
-    @GetMapping
-    public Result<Page<Favorite>> getFavorites(
-            @RequestParam(defaultValue = "1") Integer pageNum,
-            @RequestParam(defaultValue = "10") Integer pageSize,
+    @GetMapping("/list")
+    public Result<PageResult<Favorite>> getFavorites(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String targetType) {
         Long userId = (Long) this.request.getAttribute("userId");
         if (userId == null) {
             throw new RuntimeException("用户未登录");
         }
-        Page<Favorite> favorites = favoriteService.getFavoritesByUserId(userId, pageNum, pageSize, targetType);
-        return Result.success(favorites);
+        Page<Favorite> favorites = favoriteService.getFavoritesByUserId(userId, page, size, targetType);
+        return Result.success(new PageResult<>(favorites.getTotal(), favorites.getRecords()));
     }
 
     /**
