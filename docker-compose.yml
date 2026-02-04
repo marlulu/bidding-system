@@ -9,8 +9,8 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ./mysql-data:/var/lib/mysql
-      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+      - /home/bidding-system/mysql-data:/var/lib/mysql
+      - /home/bidding-system/database-scripts/database.sql:/docker-entrypoint-initdb.d/database.sql
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
 
   backend:
@@ -20,13 +20,11 @@ services:
     ports:
       - "8083:8083"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/bidding_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/bidding_system?useSSL=true&trustServerCertificate=true&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 123456
     depends_on:
       - db
-    volumes:
-      - ./uploads:/app/uploads
 
   frontend:
     image: bidding-frontend:latest
@@ -36,6 +34,3 @@ services:
       - "8082:80"
     depends_on:
       - backend
-
-volumes:
-  db_data:

@@ -85,12 +85,13 @@
               <p><el-icon><Location /></el-icon> 地区：{{ item.region || '全国' }}</p>
               <p><el-icon><Money /></el-icon> 预算：<span class="price">￥{{ formatMoney(item.projectBudget) }}</span></p>
               <p><el-icon><Calendar /></el-icon> 截止：{{ formatDate(item.bidDeadline) }}</p>
+              <p><el-icon><Clock /></el-icon> 发布：{{ formatDate(item.publishTime) }}</p>
             </div>
 
             <!-- 底部操作 -->
             <div class="card-footer">
-              <el-button type="primary" link @click="handleDetail(item.id)">
-                {{ userStore.isAdmin() ? '查看详情' : '立即投标' }}
+              <el-button type="primary" link @click="handleDetail(item.id, userStore.isAdmin() ? '' : 'bid')">
+                {{ userStore.isAdmin() ? '查看详情' : '去投标' }}
               </el-button>
             </div>
           </el-card>
@@ -152,7 +153,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Location, Money, Calendar, MoreFilled } from '@element-plus/icons-vue'
+import { Search, Location, Money, Calendar, MoreFilled, Clock } from '@element-plus/icons-vue'
 import { getAnnouncementList, deleteAnnouncement, publishAnnouncement } from '@/api/announcement'
 import { extractExperts, getExtractedExperts, checkExtractionStatus } from '@/api/expert'
 import { useUserStore } from '@/stores/user'
@@ -211,8 +212,9 @@ const handleSearch = () => {
   loadData()
 }
 
-const handleDetail = (id) => {
-  router.push(`/announcements/detail/${id}`)
+const handleDetail = (id, action) => {
+  const query = action ? { action } : {}
+  router.push({ path: `/announcements/detail/${id}`, query })
 }
 
 const handleCommand = async (command, id) => {

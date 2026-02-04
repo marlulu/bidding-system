@@ -1,6 +1,5 @@
 package com.bidding.controller;
 
-import com.bidding.common.LoginUser;
 import com.bidding.common.Result;
 import com.bidding.dto.LoginRequest;
 import com.bidding.dto.RegisterRequest;
@@ -8,18 +7,15 @@ import com.bidding.dto.ResetPasswordRequest;
 import com.bidding.dto.ChangePasswordRequest;
 import com.bidding.service.UserService;
 import com.bidding.vo.LoginVO;
-import com.bidding.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserService userService;
@@ -33,10 +29,10 @@ public class AuthController {
             LoginVO loginVO = userService.login(request);
             return Result.success(loginVO);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("登录失败", e);
+            throw e;
         }
     }
-
 
     /**
      * 用户登出
@@ -55,7 +51,8 @@ public class AuthController {
             userService.register(request);
             return Result.success("注册成功，请等待管理员审核", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("注册失败", e);
+            throw e;
         }
     }
 
@@ -68,7 +65,8 @@ public class AuthController {
             userService.resetPassword(request);
             return Result.success("密码重置成功", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("重置密码失败", e);
+            throw e;
         }
     }
 
@@ -76,12 +74,14 @@ public class AuthController {
      * 修改密码
      */
     @PostMapping("/change-password")
-    public Result<String> changePassword(@RequestAttribute("userId") Long userId, @Valid @RequestBody ChangePasswordRequest request) {
+    public Result<String> changePassword(@RequestAttribute("userId") Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
         try {
             userService.changePassword(userId, request);
             return Result.success("密码修改成功");
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("修改密码失败", e);
+            throw e;
         }
     }
 }

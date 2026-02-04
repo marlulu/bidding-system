@@ -8,18 +8,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.bidding.common.Constants;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/policies")
 public class PolicyController {
 
     private void checkAdmin(HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
+        log.info("[PolicyController] checkAdmin - role: {}", role);
         if (!Constants.ROLE_ADMIN.equals(role)) {
-            throw new RuntimeException("无权操作");
+            throw new RuntimeException("无权操作 (当前角色: " + role + ")");
         }
     }
-
 
     @Autowired
     private PolicyService policyService;
@@ -37,11 +39,12 @@ public class PolicyController {
             HttpServletRequest request) {
         try {
             String role = (String) request.getAttribute("role");
-            
+
             PageResult<Policy> result = policyService.getPolicyList(page, size, keyword, category, status, role);
             return Result.success(result);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("获取政策列表失败", e);
+            throw e; // 交给全局异常处理器
         }
     }
 
@@ -52,11 +55,12 @@ public class PolicyController {
     public Result<Policy> getPolicyById(@PathVariable Long id, HttpServletRequest request) {
         try {
             String role = (String) request.getAttribute("role");
-            
+
             Policy policy = policyService.getPolicyById(id, role);
             return Result.success(policy);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("获取政策详情失败", e);
+            throw e;
         }
     }
 
@@ -65,12 +69,13 @@ public class PolicyController {
      */
     @PostMapping
     public Result<Void> createPolicy(@RequestBody Policy policy, HttpServletRequest request) {
-        checkAdmin(request);
         try {
+            checkAdmin(request);
             policyService.createPolicy(policy);
             return Result.success("创建成功", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("创建政策失败", e);
+            throw e;
         }
     }
 
@@ -79,13 +84,14 @@ public class PolicyController {
      */
     @PutMapping("/{id}")
     public Result<Void> updatePolicy(@PathVariable Long id, @RequestBody Policy policy, HttpServletRequest request) {
-        checkAdmin(request);
         try {
+            checkAdmin(request);
             policy.setId(id);
             policyService.updatePolicy(policy);
             return Result.success("更新成功", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("更新政策失败", e);
+            throw e;
         }
     }
 
@@ -94,12 +100,13 @@ public class PolicyController {
      */
     @DeleteMapping("/{id}")
     public Result<Void> deletePolicy(@PathVariable Long id, HttpServletRequest request) {
-        checkAdmin(request);
         try {
+            checkAdmin(request);
             policyService.deletePolicy(id);
             return Result.success("删除成功", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("删除政策失败", e);
+            throw e;
         }
     }
 
@@ -110,10 +117,12 @@ public class PolicyController {
     public Result<Void> publishPolicy(@PathVariable Long id, HttpServletRequest request) {
         try {
             Long publisherId = (Long) request.getAttribute("userId");
+            // 这里可能也需要检查权限，或者在 Service 层检查
             policyService.publishPolicy(id, publisherId);
             return Result.success("发布成功", null);
         } catch (Exception e) {
-            return Result.error(e.getMessage());
+            log.error("发布政策失败", e);
+            throw e;
         }
     }
 }

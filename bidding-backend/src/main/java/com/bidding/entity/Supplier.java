@@ -12,6 +12,7 @@ public class Supplier {
     private String companyName;
     private String companyCode;
     private String legalPerson;
+    private String legalPersonPhone;
     private String contactName;
     private String contactPhone;
     private String contactEmail;
@@ -21,7 +22,7 @@ public class Supplier {
     private String qualificationLevel;
     private String description;
     private String qualificationFiles;
-        private Integer status; // 0-待审核, 1-审核通过, 2-审核不通过
+    private Integer status; // 0-待审核, 1-审核通过, 2-审核不通过
 
     private String auditRemark; // 审核意见
 

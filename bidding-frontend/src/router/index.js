@@ -39,10 +39,16 @@ const routes = [
         meta: { title: '供应商详情', requiresAuth: true }
       },
       {
+        path: 'suppliers/audit/:id',
+        name: 'SupplierAuditDetail',
+        component: () => import('@/views/supplier/AuditDetail.vue'),
+        meta: { title: '审核供应商', requiresAuth: true, role: 'ADMIN' }
+      },
+      {
         path: 'suppliers/audit',
         name: 'SupplierAudit',
         component: () => import('@/views/supplier/Audit.vue'),
-        meta: { title: '供应商审核', requiresAuth: true, role: 'ADMIN' }
+        meta: { title: '供应商审核列表', requiresAuth: true, role: 'ADMIN' }
       },
       {
         path: 'suppliers/create',
@@ -134,7 +140,19 @@ const routes = [
         name: 'ExpertList',
         component: () => import('@/views/expert/List.vue'),
         meta: { title: '专家库管理', requiresAuth: true, role: 'ADMIN' }
-      }
+      },
+      {
+        path: 'bids/my',
+        name: 'MyBids',
+        component: () => import('@/views/bid/MyBids.vue'),
+        meta: { title: '我的投标', requiresAuth: true, role: 'SUPPLIER' }
+      },
+      {
+        path: 'announcements/:id/bids',
+        name: 'AdminBidList',
+        component: () => import('@/views/bid/AdminBidList.vue'),
+        meta: { title: '投标管理', requiresAuth: true, role: 'ADMIN' }
+      },
     ]
   },
   {
@@ -159,10 +177,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = getToken()
   const userStore = useUserStore()
-  
+
   // 设置页面标题
   if (to.meta.title) {
-    document.title = `${to.meta.title} - 内部招标采购门户`
+    document.title = `${to.meta.title} - 重庆潼星建设有限公司招标采购网`
   }
 
   // 1. 检查路由元信息中的 requiresAuth
@@ -175,7 +193,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !token) {
     // 触发全局登录弹窗
     userStore.loginDialogVisible = true
-    
+
     // 如果是从首页或列表页点击进入的，保持在原页面，不进行跳转
     // 这样用户登录成功后，可以直接再次点击或由逻辑自动触发进入
     if (from.path && from.path !== '/') {

@@ -11,6 +11,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    # url: jdbc:mysql://localhost:3306/bidding_system?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    # username: root
+    # password: 123456
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -27,12 +30,10 @@ mybatis-plus:
       logic-not-delete-value: 0
   mapper-locations: classpath:mapper/*.xml
 
-# JWT配置
 jwt:
   secret: biddingSystemSecretKey2026ForJWTTokenGeneration
-  expiration: 86400000  # 24小时，单位毫秒
+  expiration: 86400000
 
-# 文件上传配置
 file:
   upload-path: /home/ubuntu/bidding-system/uploads/
-  max-size: 10485760  # 10MB
+  max-size: 10485760

@@ -59,6 +59,11 @@
               <el-input v-model="form.legalPerson" placeholder="请输入法人代表" />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="法人电话" prop="legalPersonPhone">
+              <el-input v-model="form.legalPersonPhone" placeholder="请输入法人联系电话" />
+            </el-form-item>
+          </el-col>
         </el-row>
 
         <el-row :gutter="20">
@@ -137,6 +142,7 @@ const form = reactive({
   scale: 'SMALL',
   qualificationLevel: '',
   legalPerson: '',
+  legalPersonPhone: '',
   contactName: '',
   contactPhone: '',
   contactEmail: '',
@@ -149,6 +155,7 @@ const form = reactive({
 const rules = {
   companyName: [{ required: true, message: '请输入公司名称', trigger: 'blur' }],
   companyCode: [{ required: true, message: '请输入统一社会信用代码', trigger: 'blur' }],
+  legalPerson: [{ required: true, message: '请输入法人代表', trigger: 'blur' }],
   contactName: [{ required: true, message: '请输入联系人姓名', trigger: 'blur' }],
   contactPhone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
 }

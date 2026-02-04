@@ -5,7 +5,7 @@
       <div class="header-content">
         <div class="logo" @click="router.push('/')">
           <el-icon :size="30" color="#fff"><Platform /></el-icon>
-          <span>内部招标采购门户</span>
+          <span>重庆潼星建设有限公司招标采购网</span>
         </div>
         
         <el-menu
@@ -20,6 +20,7 @@
           <el-menu-item index="/">首页</el-menu-item>
           <el-menu-item index="/announcements">招标信息</el-menu-item>
           <el-menu-item index="/suppliers">供应商库</el-menu-item>
+          <el-menu-item v-if="userStore.role === 'SUPPLIER'" index="/bids/my">我的投标</el-menu-item>
           <el-menu-item index="/policies">政策法规</el-menu-item>
           <el-menu-item index="/notices">通知公告</el-menu-item>
         </el-menu>
@@ -68,7 +69,7 @@
       <div class="footer-content">
         <div class="footer-section">
           <h4>关于我们</h4>
-          <p>内部招标采购门户致力于提供公平、公正、公开的招标环境。</p>
+          <p>重庆潼星建设有限公司招标采购网致力于提供公平、公正、公开的招标环境。</p>
         </div>
         <div class="footer-section">
           <h4>联系方式</h4>
@@ -82,7 +83,7 @@
         </div>
       </div>
       <div class="copyright">
-        Copyright © 2026 内部招标采购门户 版权所有
+        Copyright © 2026 重庆潼星建设有限公司招标采购网 版权所有
       </div>
     </el-footer>
 

@@ -50,6 +50,7 @@
             type="datetime"
             placeholder="选择日期时间"
             value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 50%"
           />
         </el-form-item>
         
@@ -59,6 +60,16 @@
         
         <el-form-item label="联系电话" prop="contactPhone">
           <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
+        </el-form-item>
+
+        <el-form-item label="发布时间" prop="publishTime">
+          <el-date-picker
+            v-model="form.publishTime"
+            type="datetime"
+            placeholder="请选择发布时间（留空则为当前时间）"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 50%"
+          />
         </el-form-item>
         
         <el-form-item label="可见级别" prop="visibilityLevel">
@@ -100,6 +111,24 @@
             placeholder="请输入公告内容"
           />
         </el-form-item>
+
+        <el-form-item label="附件" prop="attachmentFiles">
+          <el-upload
+            v-model:file-list="fileList"
+            action="/api/common/upload"
+            :headers="uploadHeaders"
+            :on-success="handleUploadSuccess"
+            :on-remove="handleUploadRemove"
+            multiple
+          >
+            <el-button type="primary">点击上传附件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持 Word、PDF 等文件
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
         
         <el-form-item>
           <el-button type="primary" @click="handleSubmit" :loading="loading">
@@ -120,11 +149,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAnnouncementDetail, createAnnouncement, updateAnnouncement, publishAnnouncement } from '@/api/announcement'
 import { getAllSuppliers } from '@/api/supplier'
 import { ElMessage } from 'element-plus'
+import { getToken } from '@/utils/auth'
+import { Plus } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -133,8 +164,13 @@ const formRef = ref(null)
 const loading = ref(false)
 const suppliers = ref([])
 const announcementData = ref({})
+const fileList = ref([])
 
 const isEdit = computed(() => !!route.params.id)
+
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${getToken()}`
+}))
 
 const form = reactive({
   announcementNo: '',
@@ -147,14 +183,18 @@ const form = reactive({
   bidDeadline: '',
   contactPerson: '',
   contactPhone: '',
+  publishTime: '',
   visibilityLevel: 'PUBLIC',
   visibleSupplierIds: [],
   isTop: 0,
-  content: ''
+  visibleSupplierIds: [],
+  isTop: 0,
+  content: '',
+  attachmentFiles: ''
 })
 
 const rules = {
-  announcementNo: [{ required: true, message: '请输入公告编号', trigger: 'blur' }],
+  announcementNo: [{ required: false }],
   title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
   type: [{ required: true, message: '请选择公告类型', trigger: 'change' }],
   projectName: [{ required: true, message: '请输入项目名称', trigger: 'blur' }],
@@ -178,6 +218,13 @@ const loadData = async () => {
       if (data.visibleSupplierIds) {
         form.visibleSupplierIds = JSON.parse(data.visibleSupplierIds)
       }
+      if (data.attachmentFiles) {
+        try {
+          fileList.value = JSON.parse(data.attachmentFiles)
+        } catch (e) {
+          fileList.value = []
+        }
+      }
     } catch (error) {
       console.error('加载数据失败', error)
       ElMessage.error('加载公告数据失败')
@@ -195,6 +242,16 @@ const handleSubmit = async () => {
       submitData.visibleSupplierIds = JSON.stringify(submitData.visibleSupplierIds)
     } else {
       submitData.visibleSupplierIds = null
+    }
+
+    if (fileList.value.length > 0) {
+      const files = fileList.value.map(f => ({
+        name: f.name,
+        url: f.response ? f.response.data.url : f.url
+      }))
+      submitData.attachmentFiles = JSON.stringify(files)
+    } else {
+      submitData.attachmentFiles = ''
     }
     
     if (isEdit.value) {
@@ -234,6 +291,18 @@ const handlePublish = async () => {
 
 const handleCancel = () => {
   router.back()
+}
+
+const handleUploadSuccess = (response, uploadFile, uploadFiles) => {
+  if (response.code === 200) {
+    ElMessage.success('上传成功')
+  } else {
+    ElMessage.error(response.message || '上传失败')
+  }
+}
+
+const handleUploadRemove = (file, uploadFiles) => {
+  console.log('Removed file', file)
 }
 
 const formatStatus = (status) => {

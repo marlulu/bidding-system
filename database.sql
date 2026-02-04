@@ -45,6 +45,7 @@ CREATE TABLE `supplier` (
   `scale` varchar(20) DEFAULT NULL,
   `qualification_level` varchar(50) DEFAULT NULL,
   `legal_person` varchar(50) DEFAULT NULL,
+  `legal_person_phone` varchar(20) DEFAULT NULL COMMENT '法人联系电话',
   `contact_name` varchar(50) NOT NULL,
   `contact_phone` varchar(20) NOT NULL,
   `contact_email` varchar(100) DEFAULT NULL,
@@ -161,6 +162,8 @@ CREATE TABLE `sys_expert` (
   `title` varchar(100) DEFAULT NULL COMMENT '职称',
   `phone` varchar(20) DEFAULT NULL COMMENT '联系电话',
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
+  `id_card_number` varchar(50) DEFAULT NULL COMMENT '身份证号/专家证号',
+  `certificate_photo` text DEFAULT NULL COMMENT '专家证书照片(JSON数组)',
   `description` text COMMENT '专家简介',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -203,3 +206,14 @@ CREATE TABLE `bid_record` (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='投标记录表';
+
+-- ==========================================
+-- 升级脚本 / Migration Scripts
+-- 如果您是在现有数据库上升级，请执行以下命令：
+-- ==========================================
+
+-- 2026-01-23: 为 sys_expert 表添加证件号码和证书照片字段
+/*
+ALTER TABLE `sys_expert` ADD COLUMN `id_card_number` varchar(50) DEFAULT NULL COMMENT '身份证号/专家证号';
+ALTER TABLE `sys_expert` ADD COLUMN `certificate_photo` text DEFAULT NULL COMMENT '专家证书照片(JSON数组)';
+*/

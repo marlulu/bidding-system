@@ -43,6 +43,16 @@ public class Expert implements Serializable {
     private String email;
 
     /**
+     * 身份证号/专家证号
+     */
+    private String idCardNumber;
+
+    /**
+     * 专家证书照片
+     */
+    private String certificatePhoto;
+
+    /**
      * 专家简介
      */
     private String description;

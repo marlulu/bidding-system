@@ -2,6 +2,7 @@ package com.bidding.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -18,6 +19,7 @@ public class Announcement {
     private BigDecimal projectBudget;
     private String region;
     private String industry;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime bidDeadline;
     private Integer isTop;
     private String contactPerson;
@@ -27,6 +29,7 @@ public class Announcement {
     private String visibleSupplierIds;
     private String status;
     private Long publisherId;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime publishTime;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

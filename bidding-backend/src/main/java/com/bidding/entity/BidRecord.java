@@ -17,4 +17,7 @@ public class BidRecord {
     private BigDecimal bidAmount;
     private String status; // SUBMITTED, WIN, LOSE
     private LocalDateTime createTime;
+
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private String announcementTitle;
 }

@@ -37,6 +37,23 @@
         <el-table-column label="联系电话" prop="phone"></el-table-column>
         <el-table-column label="邮箱" prop="email"></el-table-column>
         <el-table-column label="简介" prop="description" show-overflow-tooltip></el-table-column>
+        <el-table-column label="证书照片" align="center" width="100">
+          <template #default="{ row }">
+             <div v-if="isValidPhoto(row.certificatePhoto)" class="table-photo-cell">
+               <el-image 
+                 :src="getFirstPhoto(row.certificatePhoto)" 
+                 :preview-src-list="getAllPhotos(row.certificatePhoto)"
+                 fit="cover"
+                 style="width: 50px; height: 50px"
+                 preview-teleported
+               />
+               <span v-if="getPhotoCount(row.certificatePhoto) > 1" class="photo-count">
+                 +{{ getPhotoCount(row.certificatePhoto) - 1 }}
+               </span>
+             </div>
+             <span v-else>无</span>
+          </template>
+        </el-table-column>
         <el-table-column label="创建时间" prop="createTime" width="160">
           <template #default="{ row }">
             {{ row.createTime }}
@@ -68,6 +85,9 @@
         <el-form-item label="专家姓名" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
+        <el-form-item label="证件号码" prop="idCardNumber">
+          <el-input v-model="temp.idCardNumber" placeholder="请输入身份证号或专家证号" />
+        </el-form-item>
         <el-form-item label="专业领域" prop="specialty">
           <el-input v-model="temp.specialty" />
         </el-form-item>
@@ -83,6 +103,35 @@
         <el-form-item label="专家简介" prop="description">
           <el-input v-model="temp.description" type="textarea" :rows="3" />
         </el-form-item>
+        <el-form-item label="证书照片" prop="certificatePhoto">
+          <div class="photo-list">
+            <div v-for="(url, index) in certificateList" :key="index" class="photo-item">
+              <el-image 
+                :src="getPreviewUrl(url)" 
+                :preview-src-list="getAllPreviewUrls()"
+                fit="cover"
+                class="photo-img"
+              />
+              <div class="photo-delete" @click="handleRemovePhoto(index)">
+                <el-icon><Delete /></el-icon>
+              </div>
+            </div>
+            
+            <el-upload
+              class="photo-uploader"
+              action="/api/common/upload"
+              :headers="uploadHeaders"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
+            >
+              <div class="photo-add">
+                <el-icon><Plus /></el-icon>
+                <div class="add-text">新增</div>
+              </div>
+            </el-upload>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogFormVisible = false">取消</el-button>
@@ -96,7 +145,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getExpertList, addExpert, updateExpert, deleteExpert } from '@/api/expert'
-import { Plus, Search, Refresh } from '@element-plus/icons-vue'
+import { Plus, Search, Refresh, Delete } from '@element-plus/icons-vue'
+import { getToken } from '@/utils/auth'
 
 
 
@@ -128,11 +178,20 @@ const temp = reactive({
   title: '',
   phone: '',
   email: '',
-  description: ''
+  description: '',
+  idCardNumber: '',
+  certificatePhoto: ''
 })
+
+const certificateList = ref([])
+
+const uploadHeaders = {
+  Authorization: `Bearer ${getToken()}`
+}
 
 const rules = reactive({
   name: [{ required: true, message: '专家姓名不能为空', trigger: 'blur' }],
+  idCardNumber: [{ required: true, message: '证件号码不能为空', trigger: 'blur' }],
   specialty: [{ required: true, message: '专业领域不能为空', trigger: 'blur' }],
   phone: [{ required: true, message: '联系电话不能为空', trigger: 'blur' }]
 })
@@ -171,6 +230,89 @@ const resetTemp = () => {
   temp.phone = ''
   temp.email = ''
   temp.description = ''
+  temp.idCardNumber = ''
+  temp.certificatePhoto = ''
+  certificateList.value = []
+}
+
+// Helper functions for image display
+const getPreviewUrl = (url) => {
+  if (!url) return ''
+  return `/api/common/view?url=${encodeURIComponent(url)}`
+}
+
+const getAllPreviewUrls = () => {
+  return certificateList.value.map(url => getPreviewUrl(url))
+}
+
+const isValidPhoto = (jsonStr) => {
+  if (!jsonStr) return false
+  try {
+    const photos = JSON.parse(jsonStr)
+    return Array.isArray(photos) ? photos.length > 0 : !!jsonStr
+  } catch (e) {
+    return !!jsonStr
+  }
+}
+
+const getFirstPhoto = (jsonStr) => {
+  if (!jsonStr) return ''
+  try {
+    const photos = JSON.parse(jsonStr)
+    return Array.isArray(photos) && photos.length > 0 ? getPreviewUrl(photos[0]) : ''
+  } catch (e) {
+    return getPreviewUrl(jsonStr)
+  }
+}
+
+const getAllPhotos = (jsonStr) => {
+  if (!jsonStr) return []
+  try {
+    const photos = JSON.parse(jsonStr)
+    return Array.isArray(photos) ? photos.map(url => getPreviewUrl(url)) : [getPreviewUrl(jsonStr)]
+  } catch (e) {
+    return [getPreviewUrl(jsonStr)]
+  }
+}
+
+const getPhotoCount = (jsonStr) => {
+   if (!jsonStr) return 0
+   try {
+     const photos = JSON.parse(jsonStr)
+     return Array.isArray(photos) ? photos.length : 1
+   } catch (e) {
+     return 1
+   }
+}
+
+const handleRemovePhoto = (index) => {
+  certificateList.value.splice(index, 1)
+  temp.certificatePhoto = JSON.stringify(certificateList.value)
+}
+
+const handleAvatarSuccess = (response, uploadFile) => {
+  if (response.code === 200) {
+    certificateList.value.push(response.data.url)
+    temp.certificatePhoto = JSON.stringify(certificateList.value)
+    ElMessage.success('上传成功')
+  } else {
+    ElMessage.error(response.message || '上传失败')
+  }
+}
+
+const beforeAvatarUpload = (rawFile) => {
+  const isImage = rawFile.type.startsWith('image/')
+  const isLt2M = rawFile.size / 1024 / 1024 < 2
+
+  if (!isImage) {
+    ElMessage.error('上传图片只能是 JPG/PNG 格式!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传图片大小不能超过 2MB!')
+    return false
+  }
+  return true
 }
 
 const handleAdd = () => {
@@ -180,6 +322,9 @@ const handleAdd = () => {
 }
 
 const createData = () => {
+  // Ensure certificatePhoto is synced (though it should be)
+  temp.certificatePhoto = JSON.stringify(certificateList.value)
+  
   // eslint-disable-next-line no-unused-vars
   const { id, ...data } = temp
   addExpert(data).then(() => {
@@ -191,11 +336,25 @@ const createData = () => {
 
 const handleEdit = (row) => {
   Object.assign(temp, row)
+  
+  if (temp.certificatePhoto) {
+    try {
+      const parsed = JSON.parse(temp.certificatePhoto)
+      certificateList.value = Array.isArray(parsed) ? parsed : [temp.certificatePhoto]
+    } catch (e) {
+      certificateList.value = [temp.certificatePhoto]
+    }
+  } else {
+    certificateList.value = []
+  }
+  
   dialogStatus.value = 'update'
   dialogFormVisible.value = true
 }
 
 const updateData = () => {
+  temp.certificatePhoto = JSON.stringify(certificateList.value)
+  
   updateExpert(temp.id, temp).then(() => {
     getList()
     dialogFormVisible.value = false
@@ -230,5 +389,81 @@ onMounted(() => {
 }
 .pagination-container {
   padding: 32px 16px;
+}
+.photo-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.photo-item {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #d9d9d9;
+}
+.photo-img {
+  width: 100%;
+  height: 100%;
+}
+.photo-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-bottom-left-radius: 4px;
+  transition: background-color 0.3s;
+}
+.photo-delete:hover {
+  background-color: rgba(255, 0, 0, 0.7);
+}
+.photo-uploader :deep(.el-upload) {
+  width: 100px;
+  height: 100px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--el-transition-duration-fast);
+}
+.photo-uploader :deep(.el-upload:hover) {
+  border-color: var(--el-color-primary);
+}
+.photo-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.add-text {
+  font-size: 12px;
+  color: #8c939d;
+  margin-top: 5px;
+}
+.table-photo-cell {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+}
+.photo-count {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border-radius: 8px;
+  padding: 1px 5px;
+  font-size: 10px;
+  transform: translate(30%, 30%);
 }
 </style>
